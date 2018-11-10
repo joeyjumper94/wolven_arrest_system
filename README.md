@@ -2,7 +2,7 @@
 
 this addon is to make arresting more realistic, more rewarding for cops, and more punishing to get arrested as well as discourage going AFK while arrested
 
-pretty much all the configuration that needs to be done can be done by editing lua/autorun/wolvent_arrest_system.lua
+pretty much all the configuration that needs to be done can be done by editing lua/autorun/wolven_arrest_system.lua
 
 there are also some changes that need to be made to the darkrp settings
 

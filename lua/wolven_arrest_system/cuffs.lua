@@ -151,15 +151,6 @@ hook.Add("canArrest","handcuff_hooks",function(cop,ply)
 	if ply:isArrested() then return end--already arrested, let them put them back in their cell
 	local weapon=ply:GetActiveWeapon()
 	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
-		local boxes=false and wolven_arrest_system.arrest_zones and wolven_arrest_system.arrest_zones[game.GetMap()]
-		if boxes and #boxes!=0 then
-			for int,box in ipairs(boxes)do
-				if ply:GetPos():WithinAABox(box[1],box[2]) then
-					return
-				end
-			end
-			return false,"make sure they're cuffed in the pd jail area"
-		end
 		return--allow arrest
 	end
 	return false,"it's customary to put the cuffs on when arresting someone"
@@ -229,7 +220,7 @@ local ULX_FUNC=function()
 				end
 			end
 			if #affected!=0 then
-				ulx.fancyLogAdmin(admin, "#A forcibly uncuffed #T",affected)
+				ulx.fancyLogAdmin(admin,"#A forcibly uncuffed #T",affected)
 			else
 				ULib.tsayError(admin,"nobody on the server that you targeted with the command had cuffs on",true)
 			end
@@ -240,6 +231,8 @@ local ULX_FUNC=function()
 		uncuff:help( "command to uncuff players" )
 	end
 end
+hook.Add("Initialize","handcuff_hooks",ULX_FUNC)
+if GAMEMODE and GAMEMODE.Config or player.GetAll()[1] then ULX_FUNC() end
 hook.Add("onLockpickCompleted","handcuff_hooks",function(Owner,success,target)
 	local weapon=SERVER and success and target:IsValid() and target:IsPlayer() and target:GetActiveWeapon()
 	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
@@ -264,6 +257,24 @@ hook.Add("PlayerDeath","handcuff_hooks",function(ply,weapon,killer)
 		target:SetNWEntity("handcuff_drag_ply",NULL)
 		ply:SetNWEntity("handcuff_drag",NULL)
 	end
+end)
+
+gameevent.Listen( "player_disconnect" )
+hook.Add( "player_disconnect", "handcuff_hooks", function( data )
+	local ply=Player(data.userid)
+	if cfg.remember_arrested and ply:isArrested() then
+		wolven_arrest_system.LTAP[ply:SteamID()]=true
+	end
+end)
+hook.Add("PlayerInitialSpawn","handcuff_hooks",function(ply)
+	timer.Simple(0,function()
+		if cfg.arrest_on_dc and ply and ply:IsValid() and wolven_arrest_system.LTAP[ply:SteamID()] then
+			local time=GAMEMODE.Config and GAMEMODE.Config.jailtimer or 120
+			ply:arrest(time,ply)
+			hook.Run("playerArrested",ply,time,ply)
+			wolven_arrest_system.LTAP[ply:SteamID()]=nil
+		end
+	end)
 end)
 hook.Add("PlayerSpawnObject","handcuff_hooks",function(ply)
 	local weapon=ply:GetActiveWeapon()
@@ -479,6 +490,9 @@ do
 					if self.Cuffing.time<=CurTime() then
 						if SERVER then
 							self.Cuffing.Entity:Give("revenants_handcuffed")
+							if cfg.finished_message then
+								DarkRP.notify(Owner,2,8,cfg.finished_message)
+							end
 							local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> handcuffed "..target:Name()
 							if DarkRP then
 								DarkRP.log(log, Color(0, 255, 255))
@@ -510,7 +524,6 @@ do
 			hook.Run("PostDrawPlayerHands",hands,vm,ply,weapon)
 			return true
 		end,
-		
 	}
 	weapons.Register(SWEP,SWEP.ClassName)
 end

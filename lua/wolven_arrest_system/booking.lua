@@ -24,6 +24,34 @@ function ENT:Initialize()
 		self:SetUseType(SIMPLE_USE)
 	end
 end
+function ENT:Use(activator,ply,useType,value)
+	if self.Cooldown and self.Cooldown>CurTime() then return end
+	if ply:isCP() then
+		local supress_hint,count,target=false,0,ply:GetNWEntity("handcuff_drag")
+		if target and target:IsValid() then
+			supress_hint,jailed=self:Arrest(target,ply)
+		end
+		for k,target in ipairs(player.GetAll()) do
+			if target:GetPos():DistToSqr(self:GetPos()) < cfg.distance*cfg.distance then
+				local add,jailed=self:Arrest(target,ply)
+				count=count+add
+				supress_hint=supress_hint or jailed
+			end
+		end
+		if not supress_hint then
+			DarkRP.notify(ply,3,8,"There are no nearby handcuffed players.\nBring a handcuffed player here then press E on this to arrest them.")
+		elseif count>0 and cfg.reward and cfg.reward>0 then
+			ply:addMoney(cfg.reward*count)
+			DarkRP.notify(ply,2,8,
+				"You arrested "..count.." player"..(count!=1 and "s\n" or "\n")..
+				"You've been paid "..DarkRP.formatMoney(cfg.reward*count)
+			)
+		end
+	else
+		DarkRP.notify(ply,3,8,"only cops can use the booking station")
+	end
+	self.Cooldown=CurTime()+cfg.time
+end
 function ENT:Arrest(target,ply)
 	if target:isArrested() then
 		target:arrest()
@@ -61,35 +89,6 @@ function ENT:Arrest(target,ply)
 	end
 	return 0,false
 end
-function ENT:Use(activator,ply,useType,value)
-	if self.Cooldown and self.Cooldown>CurTime() then return end
-	if ply:isCP() then
-		local supress_hint,count,target=false,0,ply:GetNWEntity("handcuff_drag")
-		if target and target:IsValid() then
-			supress_hint,jailed=self:Arrest(target,ply)
-		end
-		for k,target in ipairs(player.GetAll()) do
-			if target:GetPos():DistToSqr(self:GetPos()) < cfg.distance*cfg.distance then
-				local add,jailed=self:Arrest(target,ply)
-				print(add,jailed)
-				count=count+add
-				supress_hint=supress_hint or jailed
-			end
-		end
-		if not supress_hint then
-			DarkRP.notify(ply,3,8,"There are no nearby handcuffed players.\nBring a handcuffed player here then press E on this to arrest them.")
-		elseif count>0 and cfg.reward and cfg.reward>0 then
-			ply:addMoney(cfg.reward*count)
-			DarkRP.notify(ply,2,8,
-				"You arrested "..count.." player"..(count!=1 and "s\n" or "\n")..
-				"You've been paid "..DarkRP.formatMoney(cfg.reward*count)
-			)
-		end
-	else
-		DarkRP.notify(ply,3,8,"only cops can use the booking station")
-	end
-	self.Cooldown=CurTime()+cfg.time
-end
 scripted_ents.Register(ENT,ENT.ClassName)
 hook.Add("canArrest","booking_hooks",function(cop,ply,by_unit)
 	if ply:isArrested() then return end--already arrested, let them put them back in their cell
@@ -97,6 +96,23 @@ hook.Add("canArrest","booking_hooks",function(cop,ply,by_unit)
 		return--allow arrest
 	end
 	return false,"you can only arrest by the booking unit"
+end)
+gameevent.Listen( "player_disconnect" )
+hook.Add( "player_disconnect", "handcuff_hooks", function( data )
+	local ply=Player(data.userid)
+	if cfg.remember_arrested and ply:isArrested() then
+		wolven_arrest_system.LTAP[ply:SteamID()]=true
+	end
+end)
+hook.Add("PlayerInitialSpawn","handcuff_hooks",function(ply)
+	timer.Simple(0,function()
+		if cfg.arrest_on_dc and ply and ply:IsValid() and wolven_arrest_system.LTAP[ply:SteamID()] then
+			local time=GAMEMODE.Config and GAMEMODE.Config.jailtimer or 120
+			ply:arrest(time,ply)
+			hook.Run("playerArrested",ply,time,ply)
+			wolven_arrest_system.LTAP[ply:SteamID()]=nil
+		end
+	end)
 end)
 hook.Add("PlayerLoadout","booking_hooks",function(ply)
 	if cfg.noabaton then

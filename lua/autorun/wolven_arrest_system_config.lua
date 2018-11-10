@@ -1,3 +1,5 @@
+local tbl=wolven_arrest_system and wolven_arrest_system.LTAP or {}--don't touch this line
+
 wolven_arrest_system={
 	ent_replacement={--the model of a map entity is the key and the value is the classname of the ent to replace it
 		["models/props_wasteland/prison_toilet01.mdl"]="revenants_prison_looting",
@@ -144,6 +146,7 @@ wolven_arrest_system={
 		disallow_suicide_civilian=false,--disallow suicide if a player was tased by a civilian issue taser?
 	},
 	cuffs={
+		finished_message="press E on a cuffed player to drag them,\npress E on them again to stop dragging",--message to send to someone when they finish cuffing
 		autogive=true,--automatically give the handcuffs and keys to those who (would normally )have arrest batons?
 		distance=60,--how close do you need to be to (un)cuff?
 		time=2,--long does it take to put the cuffs on?
@@ -164,6 +167,7 @@ wolven_arrest_system={
 			{k=MOUSE_LEFT,t="Left click"},
 			{k=MOUSE_RIGHT,t="Right click"},
 		},
+		arrest_on_dc=true,--arrest people if they dc and rejoin while cuffed?
 	},
 	booking={
 		model="models/props_combine/combine_interface002.mdl",--what model should be default for this entity?
@@ -176,29 +180,31 @@ wolven_arrest_system={
 		booking_only=false,--only allow by the booking unit?
 		reward=500,--pay cops this much when arresting someone
 		noabaton=true,--remove arrest batons from people?
+		remember_arrested=true,--remember who is arrested incase they try rejoining to get out of jail?
 	},
 	bail={
 		model="models/props_phx/rt_screen.mdl",--what model should be default for this entity?
 		time=600,--how long until your bail price hits the minimum
 		wanted_reason="Escaping prison.",--wanted reason when someone tries to walk out of the jail area
+		escape_notify_self="you escaped jail, but the cops may be after you now",--message shown to players who escape jail
+		escape_notify_other="{{NAME}} has escaped from jail",--message shown to everyone else when someone escapes jail, {{NAME}} is replaced with the escapee's name
 		unarrest_zones={--map name is the key and the value is a table
 			rp_downtown_em_hs_15={--each value in here is a table
 				{--this table has 2 vectors
-					Vector(-2360,434,155),
-					Vector(-2256,227,-19),
+					Vector(-2351,371,106),
+					Vector(-2297,269,-23),
 				},
 			},
 			rp_downtown_em_hs_16={--each value in here is a table
 				{--front door
-					Vector(-2360,434,155),
-					Vector(-2256,227,-19),
+					Vector(-2351,371,106),
+					Vector(-2297,269,-23),
 				},
 				{--balcony door
-					Vector(-3248,38,567),
-					Vector(-3112,92,354),
+					Vector(-3217,92,312),
+					Vector(-3120,69,453),
 				},
 			},
-			
 			rp_downtown_v4c_v6={
 				{--window
 					Vector(-1442.550049,23.490604,141.599915),
@@ -213,6 +219,7 @@ wolven_arrest_system={
 	},
 }
 --don't touch the stuff below
+wolven_arrest_system.LTAP=tbl
 local FILES,FOLDERS=file.Find("wolven_arrest_system/*.lua","LUA")
 for k,FILE in ipairs(FILES)do
 	AddCSLuaFile("wolven_arrest_system/"..FILE)--send it to the client

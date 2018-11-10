@@ -115,14 +115,23 @@ hook.Add("playerUnArrested","bail_hooks",function(ply,cop)
 	end
 end)
 timer.Create("think_bail_hooks",0.1,0,function()
-	local zones=cfg.unarrest_zones[game.GetMap()]
-	if CLIENT or not zones then timer.Remove("think_bail_hooks") return end
+	local zones=SERVER and cfg.unarrest_zones[game.GetMap()]
+	if not zones then timer.Remove("think_bail_hooks") return end
 	for k,ply in ipairs(player.GetAll()) do
 		if ply:isArrested() then
 			for num,tbl in ipairs(zones) do
 				if ply:GetPos():WithinAABox(tbl[1],tbl[2]) then
 					ply:unArrest(ply)
 					ply:wanted(ply,cfg.wanted_reason)
+					for k,v in ipairs(player.GetAll()) do
+						if ply==v then
+							if cfg.escape_notify_self then
+								DarkRP.notify(v,2,8,cfg.escape_notify_self or "you escaped jail, but the cops may be after you")
+							end
+						elseif cfg.escape_notify_other then
+							DarkRP.notify(v,2,8,cfg.escape_notify_other:Replace("{{NAME}}",ply:Name()))
+						end
+					end
 				end
 			end
 		end

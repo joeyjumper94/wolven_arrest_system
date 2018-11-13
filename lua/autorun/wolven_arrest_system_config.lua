@@ -132,6 +132,9 @@ wolven_arrest_system={
 			function(ply,self)
 				DarkRP.notify(ply,1,8,"bad luck.")
 			end,
+			function(ply,self)
+				DarkRP.notify(ply,1,8,"Sorry.")
+			end,
 			--]]
 		},
 	},
@@ -217,6 +220,12 @@ wolven_arrest_system={
 			},
 		}
 	},
+	log_access={--a list of ranks that can see the cuff/taser logs appear in their console
+		["t-mod"]=true,
+		tmod=true,
+		mod=true,
+		moderator=true,
+	},
 }
 --don't touch the stuff below
 wolven_arrest_system.LTAP=tbl
@@ -225,7 +234,28 @@ for k,FILE in ipairs(FILES)do
 	AddCSLuaFile("wolven_arrest_system/"..FILE)--send it to the client
 	include("wolven_arrest_system/"..FILE)--run it
 end
-if CLIENT then return end
+if CLIENT then 
+	net.Receive("wolven_arrest_system.console_log",function(len,ply)
+		MsgC(unpack(net.ReadTable()))
+	end)
+	return
+end
+util.AddNetworkString("wolven_arrest_system.console_log")
+wolven_arrest_system.console_log=function(log)
+	local send={}
+	for k,ply in ipairs(player.GetAll()) do
+		if !game.IsDedicated() and ply:IsListenServerHost() then continue end--if the player is the server host, it will appear in their console when we print to the server console
+		if ply:IsAdmin() or wolven_arrest_system.log_access and wolven_arrest_system.log_access[ply:GetUserGroup()] then
+			table.insert(send,ply)
+		end
+	end
+	if #send!=0 then-- if the list is empty, why bother writing a net message that will be sent to nobody?
+		net.Start("wolven_arrest_system.console_log")
+		net.WriteTable(log)
+		net.Send(send)
+	end
+	MsgC(unpack(log))
+end
 local func=function()
 	for k,v in ipairs(ents.GetAll())do
 		local e=v:MapCreationID()!=-1 and wolven_arrest_system.ent_replacement[v:GetModel()]
@@ -253,4 +283,14 @@ hook.Add("canPocket","wolven_arrest_system_general_hooks",function(ply,ent)
 	if reason then
 		return false,reason
 	end
+end)
+hook.Add("PlayerInitialSpawn","wolven_arrest_system_general_hooks",function(ply)
+	timer.Simple(0,function()
+		if ply and ply:IsValid() and wolven_arrest_system.LTAP[ply:SteamID()] then
+			local time=GAMEMODE.Config and GAMEMODE.Config.jailtimer or 120
+			ply:arrest(time,ply)
+			hook.Run("playerArrested",ply,time,ply)
+			wolven_arrest_system.LTAP[ply:SteamID()]=nil--now they have received their punishment, 
+		end
+	end)
 end)

@@ -87,9 +87,11 @@ do
  					end
 					if hook.Run("CanTase",Owner,trace,target,self)==false then return end
 					target:EmitSound("ambient/energy/spark"..math.random(1,6)..".wav")
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> tazed "..target:Name().." with a "..self.PrintName
+					local r,g,b=Color(255,0,0),Color(0,255,0),Color(255,255,0)
+					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} tazed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} tazed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
 					if DarkRP then
-						DarkRP.log(log, Color(0, 255, 255))
+						--DarkRP.log(log, Color(0, 255, 255))
 					end
 					ServerLog(log.."\n")
 					target:Freeze(true)
@@ -220,9 +222,11 @@ do
  					end
 					if hook.Run("CanTase",Owner,trace,target,self)==false then return end
 					target:EmitSound("ambient/energy/spark"..math.random(1,6)..".wav")
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> tazed "..target:Name().." with a "..self.PrintName
+					local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} tazed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} tazed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
 					if DarkRP then
-						DarkRP.log(log, Color(0, 255, 255))
+						--DarkRP.log(log, Color(0, 255, 255))
 					end
 					ServerLog(log.."\n")
 					target:Freeze(true)

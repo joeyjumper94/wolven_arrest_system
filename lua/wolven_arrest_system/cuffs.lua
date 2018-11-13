@@ -236,12 +236,14 @@ if GAMEMODE and GAMEMODE.Config or player.GetAll()[1] then ULX_FUNC() end
 hook.Add("onLockpickCompleted","handcuff_hooks",function(Owner,success,target)
 	local weapon=SERVER and success and target:IsValid() and target:IsPlayer() and target:GetActiveWeapon()
 	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
-		weapon:Remove()
-		local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> uncuffed "..target:Name()
+		local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+		wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a lockpick","\n"})
+		local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a lockpick"
 		if DarkRP then
-			DarkRP.log(log, Color(0, 255, 255))
+			--DarkRP.log(log, Color(0, 255, 255))
 		end
 		ServerLog(log.."\n")
+		weapon:Remove()
 	end
 end)
 hook.Add("playerCanChangeTeam","handcuff_hooks",function(ply,team,force)
@@ -265,16 +267,6 @@ hook.Add( "player_disconnect", "handcuff_hooks", function( data )
 	if cfg.remember_arrested and ply:isArrested() then
 		wolven_arrest_system.LTAP[ply:SteamID()]=true
 	end
-end)
-hook.Add("PlayerInitialSpawn","handcuff_hooks",function(ply)
-	timer.Simple(0,function()
-		if cfg.arrest_on_dc and ply and ply:IsValid() and wolven_arrest_system.LTAP[ply:SteamID()] then
-			local time=GAMEMODE.Config and GAMEMODE.Config.jailtimer or 120
-			ply:arrest(time,ply)
-			hook.Run("playerArrested",ply,time,ply)
-			wolven_arrest_system.LTAP[ply:SteamID()]=nil
-		end
-	end)
 end)
 hook.Add("PlayerSpawnObject","handcuff_hooks",function(ply)
 	local weapon=ply:GetActiveWeapon()
@@ -472,12 +464,14 @@ do
 			if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
 				local weapon=target:GetActiveWeapon()
 				if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
-					weapon:Remove()
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> uncuffed "..target:Name()
+					local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
 					if DarkRP then
-						DarkRP.log(log, Color(0, 255, 255))
+						--DarkRP.log(log, Color(0, 255, 255))
 					end
 					ServerLog(log.."\n")
+					weapon:Remove()
 				end
 			end
 		end,
@@ -489,15 +483,17 @@ do
 				if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
 					if self.Cuffing.time<=CurTime() then
 						if SERVER then
-							self.Cuffing.Entity:Give("revenants_handcuffed")
 							if cfg.finished_message then
 								DarkRP.notify(Owner,2,8,cfg.finished_message)
 							end
-							local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> handcuffed "..target:Name()
+							local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+							wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} handcuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+							local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} handcuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
 							if DarkRP then
-								DarkRP.log(log, Color(0, 255, 255))
+								--DarkRP.log(log, Color(0, 255, 255))
 							end
 							ServerLog(log.."\n")
+							self.Cuffing.Entity:Give("revenants_handcuffed")
 						end
 						self.Cuffing=nil
 					end
@@ -591,12 +587,14 @@ do
 			if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
 				local weapon=target:GetActiveWeapon()
 				if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
-					weapon:Remove()
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> uncuffed "..target:Name()
+					local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+--					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
 					if DarkRP then
-						DarkRP.log(log, Color(0, 255, 255))
+						--DarkRP.log(log, Color(0, 255, 255))
 					end
 					ServerLog(log.."\n")
+					weapon:Remove()
 				end
 			end
 		end,
@@ -608,12 +606,14 @@ do
 			if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
 				local weapon=target:GetActiveWeapon()
 				if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
-					weapon:Remove()
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> uncuffed "..target:Name()
+					local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
 					if DarkRP then
-						DarkRP.log(log, Color(0, 255, 255))
+						--DarkRP.log(log, Color(0, 255, 255))
 					end
 					ServerLog(log.."\n")
+					weapon:Remove()
 				end
 			end
 		end,

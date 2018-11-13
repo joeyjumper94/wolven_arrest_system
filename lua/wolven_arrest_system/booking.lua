@@ -104,16 +104,6 @@ hook.Add( "player_disconnect", "handcuff_hooks", function( data )
 		wolven_arrest_system.LTAP[ply:SteamID()]=true
 	end
 end)
-hook.Add("PlayerInitialSpawn","handcuff_hooks",function(ply)
-	timer.Simple(0,function()
-		if cfg.arrest_on_dc and ply and ply:IsValid() and wolven_arrest_system.LTAP[ply:SteamID()] then
-			local time=GAMEMODE.Config and GAMEMODE.Config.jailtimer or 120
-			ply:arrest(time,ply)
-			hook.Run("playerArrested",ply,time,ply)
-			wolven_arrest_system.LTAP[ply:SteamID()]=nil
-		end
-	end)
-end)
 hook.Add("PlayerLoadout","booking_hooks",function(ply)
 	if cfg.noabaton then
 		timer.Simple(0,function()

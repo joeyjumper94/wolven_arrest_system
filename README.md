@@ -10,4 +10,6 @@ darkrpmodification/lua/darkrp_config/settings.lua change GM.Config.jailtimer to 
 
 darkrpmodification/lua/darkrp_config/settings.lua change GM.Config.telefromjail to false, we don't want them to always go to spawn then they are unarrested.
 
+darkrpmodification/lua/darkrp_config/settings.lua change GM.Config.arrestspeed to 300, this setting is the max speed a player can move while arrested.
+
 darkrpmodification/lua/darkrp_launguage/englist.lua change youre_arrested to something like "You have been arrested. Time left till min bail: %d seconds!"

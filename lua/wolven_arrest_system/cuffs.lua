@@ -91,57 +91,6 @@ do
 	}
 	weapons.Register(SWEP,SWEP.ClassName)
 end
-local keys=cfg.keys
-local valid={}
-for int,tbl in ipairs(keys) do
-	valid[tbl.k]=true
-end
-hook.Add("CanPlayerEnterVehicle","handcuff_hooks",function(ply,vehicle,role)
-	local weapon=ply:GetActiveWeapon()
-	if vehicle and weapon and vehicle:IsValid() and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" and vehicle:GetClass()=="prop_vehicle_prisoner_pod" then
-		return false--prevent spawning stuff
-	end
-end)
-hook.Add("PlayerGiveSWEP","handcuff_hooks",function(ply,class,SWEP)
-	if class=="revenants_handcuffed" then
---		return true
-	end
-end)
-hook.Add("PlayerCanPickupWeapon","handcuff_hooks",function(ply,weapon)
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" and ply:isArrested() then
-		return true
-	end
-end)
-hook.Add("PlayerButtonDown","handcuff_hooks",function(target,button)
-	local ply=SERVER and target:GetNWEntity("handcuff_drag_ply",NULL)
-	if ply and ply:IsValid() then
-		if button==target.handcuff_button then
-			target.handcuff_progress=(target.handcuff_progress or 0)+1
-			if target.handcuff_progress>=cfg.handcuff_progress then
-				ply:SetNWEntity("handcuff_drag",NULL)
-				target:SetNWEntity("handcuff_drag_ply",NULL)
-				target.handcuff_button=nil
-				target.handcuff_progress=nil
-				if cfg.adrenaline_max then
-					local adrenaline=math.Rand(cfg.adrenaline_min,cfg.adrenaline_max)
-					target:SetNWFloat("handcuff_adrenaline",CurTime()+adrenaline)
-					target:PrintMessage(HUD_PRINTCENTER,"you broke away\nAdrenaline Rush!!\n"..math.Round(adrenaline,3).." seconds worth of adrenaline")
-				else
-					target:PrintMessage(HUD_PRINTCENTER,"you broke away")
-				end
-			end
-		elseif valid[button] then
-			target.handcuff_progress=math.Clamp((target.handcuff_progress or 0)-1,0,cfg.handcuff_progress)
-		else
-			target.handcuff_progress=target.handcuff_progress or 0
-		end
-		local tbl=keys[math.random(1,#keys)]
-		if target.handcuff_progress then
-			target:PrintMessage(HUD_PRINTCENTER,"Escape progress: "..target.handcuff_progress.." / "..cfg.handcuff_progress.."\n"..tbl.t)
-		end
-		target.handcuff_button=tbl.k
-	end
-end)
 --[[
 local meta=FindMetaTable("CUserCmd")
 meta.AddKey=function(CUserCmd,KEY)
@@ -164,6 +113,12 @@ hook.Add("canLockpick","handcuff_hooks",function(ply,ent,trace)
 	local weapon=ent:IsValid() and ent:IsPlayer() and ent:GetActiveWeapon()
 	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
 		return true
+	end
+end)
+hook.Add("CanPlayerEnterVehicle","handcuff_hooks",function(ply,vehicle,role)
+	local weapon=cfg.NoDrive and ply:GetActiveWeapon()
+	if vehicle and weapon and vehicle:IsValid() and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" and vehicle:GetClass()=="prop_vehicle_prisoner_pod" then
+		return false--vehicle entry
 	end
 end)
 hook.Add("CanPlayerSuicide","handcuff_hooks",function(ply)
@@ -246,11 +201,51 @@ hook.Add("onLockpickCompleted","handcuff_hooks",function(Owner,success,target)
 		weapon:Remove()
 	end
 end)
+local keys=cfg.keys
+local valid={}
+for int,tbl in ipairs(keys) do
+	valid[tbl.k]=true
+end
+hook.Add("PlayerButtonDown","handcuff_hooks",function(target,button)
+	local ply=SERVER and target:GetNWEntity("handcuff_drag_ply",NULL)
+	if ply and ply:IsValid() then
+		if button==target.handcuff_button then
+			target.handcuff_progress=(target.handcuff_progress or 0)+1
+			if target.handcuff_progress>=cfg.handcuff_progress then
+				ply:SetNWEntity("handcuff_drag",NULL)
+				target:SetNWEntity("handcuff_drag_ply",NULL)
+				target.handcuff_button=nil
+				target.handcuff_progress=nil
+				if cfg.adrenaline_max then
+					local adrenaline=math.Rand(cfg.adrenaline_min,cfg.adrenaline_max)
+					target:SetNWFloat("handcuff_adrenaline",CurTime()+adrenaline)
+					target:PrintMessage(HUD_PRINTCENTER,"you broke away\nAdrenaline Rush!!\n"..math.Round(adrenaline,3).." seconds worth of adrenaline")
+				else
+					target:PrintMessage(HUD_PRINTCENTER,"you broke away")
+				end
+			end
+		elseif valid[button] then
+			target.handcuff_progress=math.Clamp((target.handcuff_progress or 0)-1,0,cfg.handcuff_progress)
+		else
+			target.handcuff_progress=target.handcuff_progress or 0
+		end
+		local tbl=keys[math.random(1,#keys)]
+		if target.handcuff_progress then
+			target:PrintMessage(HUD_PRINTCENTER,"Escape progress: "..target.handcuff_progress.." / "..cfg.handcuff_progress.."\n"..tbl.t)
+		end
+		target.handcuff_button=tbl.k
+	end
+end)
 hook.Add("playerCanChangeTeam","handcuff_hooks",function(ply,team,force)
 	if force==true then return end
 	local weapon=ply:GetActiveWeapon()
 	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
 		return false,"get someone to break you out of these cuffs first"--job change and tell why
+	end
+end)
+hook.Add("PlayerCanPickupWeapon","handcuff_hooks",function(ply,weapon)
+	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" and ply:isArrested() then
+		return true
 	end
 end)
 hook.Add("PlayerDeath","handcuff_hooks",function(ply,weapon,killer)
@@ -260,12 +255,21 @@ hook.Add("PlayerDeath","handcuff_hooks",function(ply,weapon,killer)
 		ply:SetNWEntity("handcuff_drag",NULL)
 	end
 end)
-
 gameevent.Listen( "player_disconnect" )
-hook.Add( "player_disconnect", "handcuff_hooks", function( data )
+hook.Add("player_disconnect","handcuff_hooks",function(data)
+	if SERVER and data.userid then
 	local ply=Player(data.userid)
-	if cfg.remember_arrested and ply:isArrested() then
-		wolven_arrest_system.LTAP[ply:SteamID()]=true
+		if ply and ply:IsValid() and cfg.remember_arrested then
+			local weapon=ply:GetActiveWeapon()
+			if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
+				wolven_arrest_system.LTAP[ply:SteamID()]=true
+			end
+		end
+	end
+end)
+hook.Add("PlayerGiveSWEP","handcuff_hooks",function(ply,class,SWEP)
+	if class=="revenants_handcuffed" then
+--		return true
 	end
 end)
 hook.Add("PlayerSpawnObject","handcuff_hooks",function(ply)
@@ -350,7 +354,7 @@ hook.Add("PlayerLoadout","handcuff_hooks",function(ply)
 	end
 end)
 hook.Add("StartCommand","handcuff_hooks",function(ply,CUserCmd)
-	local weapon=ply:GetActiveWeapon()
+	local weapon=ply:GetMoveType()!=MOVETYPE_NOCLIP and ply:GetActiveWeapon()
 	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" and ply:GetNWFloat("handcuff_adrenaline",0)<CurTime() then
 		--print(CUserCmd:GetButtons())
 		if cfg.no_run then

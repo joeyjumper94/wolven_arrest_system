@@ -1,26 +1,6 @@
 local tbl=wolven_arrest_system and wolven_arrest_system.LTAP or {}--don't touch this line
 
 wolven_arrest_system={
-	ent_replacement={--the model of a map entity is the key and the value is the classname of the ent to replace it
-		["models/props_wasteland/prison_toilet01.mdl"]="revenants_prison_looting",
---		["models/props_c17/furnituretoilet001a.mdl"]="revenants_prison_looting",
---		["models/props/cs_militia/toilet.mdl"]="revenants_prison_looting",
---		["models/props_2fort/sink001.mdl"]="revenants_prison_looting",
---		["models/props_c17/furnituresink001a.mdl"]="revenants_prison_looting",
---		["models/props_interiors/sinkkitchen01a.mdl"]="revenants_prison_looting",
---		["models/props_wasteland/prison_sink001a.mdl"]="revenants_prison_looting",
---		["models/props_wasteland/prison_sink001b.mdl"]="revenants_prison_looting",
-
---		["models/props_combine/combine_interface001.mdl"]="revenants_booking_station",
---		["models/props_combine/combine_interface001a.mdl"]="revenants_booking_station",--probably an HL2 EP1 prop
-		["models/props_combine/combine_interface002.mdl"]="revenants_booking_station",
---		["models/props_combine/combine_interface003.mdl"]="revenants_booking_station",
-
---		["models/props_combine/combine_intmonitor001.mdl"]="revenants_bail_unit",
---		["models/props_combine/combine_intmonitor003.mdl"]="revenants_bail_unit",
-		["models/props_phx/rt_screen.mdl"]="revenants_bail_unit",
---		["models/props_phx/sp_screen.mdl"]="revenants_bail_unit",
-	},
 	looting={
 		model="models/props_wasteland/prison_toilet01.mdl",--what model should be default for this entity?
 		time=120,--after tying to get loot, how long before the same player can loot again?
@@ -32,6 +12,7 @@ wolven_arrest_system={
 			weapon_sh_doorcharge_detonator=true,
 			med_kit=true,
 			weapon_medkit=true,
+			weapon_bugbait=true,
 		},
 		loot={
 			"lockpick",--if it's a string, we'll assume you meant to give a weapon
@@ -50,11 +31,14 @@ wolven_arrest_system={
 			"stunstick",
 			"weapon_hl2pipe",
 			"weapon_hl2bottle",
-			function(ply,self)--it can also be a function, the player who searched the entity is the first arument and the prison_looting entity is the second argument
+			function(ply,self,whitelist)--it can also be a function
+				--first argument is the player who is searching the looting entity
+				--second is the looting entity itself
+				--this is the whitelist table
 				ply:addMoney(1000)--$1,000 is pretty good
 				DarkRP.notify(ply,0,4,DarkRP.getPhrase("found_money",DarkRP.formatMoney(1000)))
 			end,
-			function(ply,self)--something really good like possibly getting out of jail free
+			function(ply,self,whitelist)--something really good like possibly getting out of jail free
 				if math.random(1,100)<=5 then--pass this check and get out of jail free
 					if ply:isArrested() then
 						ply:unArrest(ply)
@@ -68,7 +52,7 @@ wolven_arrest_system={
 					DarkRP.notify(ply,3,8,"no jackpot this time")
 				end
 			end,
-			function(ply,self)--it can also be a bad thing, like 10 damage
+			function(ply,self,whitelist)--it can also be a bad thing, like 10 damage
 				local CTakeDamageInfo=DamageInfo()
 				CTakeDamageInfo:SetDamage(10)
 				CTakeDamageInfo:SetDamageType(DMG_SLASH)
@@ -77,7 +61,7 @@ wolven_arrest_system={
 				ply:TakeDamageInfo(CTakeDamageInfo)
 				DarkRP.notify(ply,1,8,"Ouch! seems like you cut yourself on something")
 			end,
-			function(ply,self)--exponential damage
+			function(ply,self,whitelist)--exponential damage
 				local cur,max=ply:Health(),ply:GetMaxHealth()
 				local amount=max-cur
 				if amount>0 then
@@ -96,59 +80,68 @@ wolven_arrest_system={
 					DarkRP.notify(ply,1,8,"The dirt you reached into was quite disgusting.")
 				end
 			end,
-			function(ply,self)--a message telling them they got nothing
+			function(ply,self,whitelist)--a message telling them they got nothing
 				DarkRP.notify(ply,1,8,"Nothing doing.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"Found nothing.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"Turned up zilch.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"Jack.. and shit. Literally.")
+				whitelist.weapon_bugbait=true
+				ply:Give("weapon_bugbait")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
+				DarkRP.notify(ply,2,8,"when life gives you shit, throw it at people")
+				whitelist.weapon_bugbait=true
+				ply:Give("weapon_bugbait")
+			end,
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"Nope.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"Nada.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"sorry.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"Nothing but a bad smell on your hands.")
 			end,--[[
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"bupkis.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"Empty.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"No dice.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"bad luck.")
 			end,
-			function(ply,self)
+			function(ply,self,whitelist)
 				DarkRP.notify(ply,1,8,"Sorry.")
-			end,
-			--]]
+			end,--]]
 		},
 	},
 	stungun={
 		autogive=true,--automatically give the police issue taser to those who (would normally )have arrest batons?
 		stun_duration=10,--how long is a player stunned?
 		recharge_time=30,--how long does it take the stungun to rechage?
+		police_damage=0,--how much damage does the police taser do?
 		police_distance=480,--16 hammer units per foot*30 feet for police issue taser
+		civilian_damage=0,--how much damage does the civilian taser do?
 		civilian_distance=240,--16*15=240 for a civilian issue taser
 		taser_hud=true,--should we draw a hud with the taser?
 		disallow_suicide_police=true,--disallow suicide if a player was tased by a police issue taser?
 		disallow_suicide_civilian=false,--disallow suicide if a player was tased by a civilian issue taser?
 	},
 	cuffs={
+		NoDrive=true,--prevent players from entering vehicles,
 		finished_message="press E on a cuffed player to drag them,\npress E on them again to stop dragging",--message to send to someone when they finish cuffing
 		autogive=true,--automatically give the handcuffs and keys to those who (would normally )have arrest batons?
 		distance=60,--how close do you need to be to (un)cuff?
@@ -170,9 +163,14 @@ wolven_arrest_system={
 			{k=MOUSE_LEFT,t="Left click"},
 			{k=MOUSE_RIGHT,t="Right click"},
 		},
-		arrest_on_dc=true,--arrest people if they dc and rejoin while cuffed?
+		remember_arrested=true,--arrest people if they dc and rejoin while cuffed?
 	},
 	booking={
+		target_notify=[[you have your pocket and anything in it, maybe you can use something in there to break out
+the bail unit will allow you to buy your way out of jail, it costs one to ten percent of you total wallet
+the looting system may give you somthing that you can break yourself out with
+though it could also be something totally useless
+if you make it out the door, your arrested status will be removed, though you will automatically be wanted]],
 		model="models/props_combine/combine_interface002.mdl",--what model should be default for this entity?
 		distance=150,--how close does someone have to be to a booking unit to arrest via proximity mode?
 		--if a cop uses the unit, and isn't dragging someone, it checks if there are any nearby people that can be arrested then evaluates if they can be arrested
@@ -220,11 +218,33 @@ wolven_arrest_system={
 			},
 		}
 	},
+	--misc stuff
 	log_access={--a list of ranks that can see the cuff/taser logs appear in their console
 		["t-mod"]=true,
 		tmod=true,
 		mod=true,
 		moderator=true,
+		helper=true,
+	},
+	ent_replacement={--the model of a map entity is the key and the value is the classname of the ent to replace it
+		["models/props_wasteland/prison_toilet01.mdl"]="revenants_prison_looting",
+--		["models/props_c17/furnituretoilet001a.mdl"]="revenants_prison_looting",
+--		["models/props/cs_militia/toilet.mdl"]="revenants_prison_looting",
+--		["models/props_2fort/sink001.mdl"]="revenants_prison_looting",
+--		["models/props_c17/furnituresink001a.mdl"]="revenants_prison_looting",
+--		["models/props_interiors/sinkkitchen01a.mdl"]="revenants_prison_looting",
+--		["models/props_wasteland/prison_sink001a.mdl"]="revenants_prison_looting",
+--		["models/props_wasteland/prison_sink001b.mdl"]="revenants_prison_looting",
+
+--		["models/props_combine/combine_interface001.mdl"]="revenants_booking_station",
+--		["models/props_combine/combine_interface001a.mdl"]="revenants_booking_station",--probably an HL2 EP1 prop
+		["models/props_combine/combine_interface002.mdl"]="revenants_booking_station",
+--		["models/props_combine/combine_interface003.mdl"]="revenants_booking_station",
+
+--		["models/props_combine/combine_intmonitor001.mdl"]="revenants_bail_unit",
+--		["models/props_combine/combine_intmonitor003.mdl"]="revenants_bail_unit",
+		["models/props_phx/rt_screen.mdl"]="revenants_bail_unit",
+--		["models/props_phx/sp_screen.mdl"]="revenants_bail_unit",
 	},
 }
 --don't touch the stuff below
@@ -234,63 +254,3 @@ for k,FILE in ipairs(FILES)do
 	AddCSLuaFile("wolven_arrest_system/"..FILE)--send it to the client
 	include("wolven_arrest_system/"..FILE)--run it
 end
-if CLIENT then 
-	net.Receive("wolven_arrest_system.console_log",function(len,ply)
-		MsgC(unpack(net.ReadTable()))
-	end)
-	return
-end
-util.AddNetworkString("wolven_arrest_system.console_log")
-wolven_arrest_system.console_log=function(log)
-	local send={}
-	for k,ply in ipairs(player.GetAll()) do
-		if !game.IsDedicated() and ply:IsListenServerHost() then continue end--if the player is the server host, it will appear in their console when we print to the server console
-		if ply:IsAdmin() or wolven_arrest_system.log_access and wolven_arrest_system.log_access[ply:GetUserGroup()] then
-			table.insert(send,ply)
-		end
-	end
-	if #send!=0 then-- if the list is empty, why bother writing a net message that will be sent to nobody?
-		net.Start("wolven_arrest_system.console_log")
-		net.WriteTable(log)
-		net.Send(send)
-	end
-	MsgC(unpack(log))
-end
-local func=function()
-	for k,v in ipairs(ents.GetAll())do
-		local e=v:MapCreationID()!=-1 and wolven_arrest_system.ent_replacement[v:GetModel()]
-		if e then
-			local n=ents.Create(e)
-			if n:IsValid()then
-				n:SetPos(v:GetPos())
-				n:SetModel(v:GetModel())
-				n:SetAngles(v:GetAngles())
-				n:Spawn()
-				v:Remove()
-			end
-		end
-	end
-end
-hook.Add("PostCleanupMap","wolven_arrest_system_general_hooks",func)
-hook.Add("InitPostEntity","wolven_arrest_system_general_hooks",func)
-local blacklist={
-	revenants_prison_looting="i don't think i want to put that in my pocket",
-	revenants_booking_station="it's secured in place",
-	revenants_bail_unit="it's bolted to the wall"
-}
-hook.Add("canPocket","wolven_arrest_system_general_hooks",function(ply,ent)
-	local reason=blacklist[ent:GetClass()]
-	if reason then
-		return false,reason
-	end
-end)
-hook.Add("PlayerInitialSpawn","wolven_arrest_system_general_hooks",function(ply)
-	timer.Simple(0,function()
-		if ply and ply:IsValid() and wolven_arrest_system.LTAP[ply:SteamID()] then
-			local time=GAMEMODE.Config and GAMEMODE.Config.jailtimer or 120
-			ply:arrest(time,ply)
-			hook.Run("playerArrested",ply,time,ply)
-			wolven_arrest_system.LTAP[ply:SteamID()]=nil--now they have received their punishment, 
-		end
-	end)
-end)

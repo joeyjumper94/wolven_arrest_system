@@ -77,6 +77,10 @@ function ENT:Arrest(target,ply)
 			else
 				local time=GAMEMODE.Config and GAMEMODE.Config.jailtimer or 120
 				target:arrest(time,ply)
+				if cfg.target_notify then
+					DarkRP.notify(target,2,8,"check your console")
+					target:SendLua("wolven_arrest_system.booking_arrest_msg()")
+				end
 				hook.Run("playerArrested",target,time,ply)
 				local log=ply:Name().." ("..ply:SteamID()..") arrested "..target:Name()
 				if DarkRP then
@@ -99,9 +103,13 @@ hook.Add("canArrest","booking_hooks",function(cop,ply,by_unit)
 end)
 gameevent.Listen( "player_disconnect" )
 hook.Add( "player_disconnect", "handcuff_hooks", function( data )
-	local ply=Player(data.userid)
-	if cfg.remember_arrested and ply:isArrested() then
-		wolven_arrest_system.LTAP[ply:SteamID()]=true
+	if SERVER and data.userid then
+		local ply=Player(data.userid)
+		if ply and ply:IsValid() and cfg.remember_arrested then
+			if ply:isArrested() then
+				wolven_arrest_system.LTAP[ply:SteamID()]=true
+			end
+		end
 	end
 end)
 hook.Add("PlayerLoadout","booking_hooks",function(ply)

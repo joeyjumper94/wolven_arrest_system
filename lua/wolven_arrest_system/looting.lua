@@ -27,7 +27,7 @@ function ENT:Initialize()
 end
 function ENT:Use(activator,ply,useType,value)
 	local cooldown=self[ply:SteamID64()]
-	if cooldown and cooldown>CurTime() then
+	if cooldown and cooldown+cfg.time>CurTime() then
 		DarkRP.notify(ply,1,8,"you have already searched this\nPlease wait "..math.Round(cooldown-CurTime(),3).." seconds")
 	elseif cfg.need_arrested and not ply:isArrested() then
 		DarkRP.notify(ply,3,8,"if you are arrested, you can search this and possibly get something to escape with")
@@ -43,9 +43,9 @@ function ENT:Use(activator,ply,useType,value)
 				ply:SelectWeapon(item)
 			end
 		elseif type(item)=="function" then
-			item(ply,self)
+			item(ply,self,cfg.whitelist)
 		end
-		self[ply:SteamID64()]=CurTime()+cfg.time
+		self[ply:SteamID64()]=CurTime()
 	end
 end
 scripted_ents.Register(ENT,ENT.ClassName)

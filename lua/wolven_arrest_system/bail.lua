@@ -34,12 +34,9 @@ function ENT:Draw()
 	self.Drawtimer=CurTime()+5
 end
 function ENT:Use(activator,ply,useType,value)
-	if ply.bail_amount then
-		DarkRP.notify(ply,1,8,"must be really high latency, you somehow used this twice")
-	elseif ply:isArrested() then
-		local amount=math.Round(ply:getDarkRPVar("money")*ply.bail_cost_multiplier)
+	if ply:isArrested() then
+		local amount=math.Round(ply.bail_amount*ply.bail_cost_multiplier)
 		net.Start("revenants_bail_unit")
-		ply.bail_amount=amount
 		net.WriteUInt(amount,32)
 		net.Send(ply)
 	else
@@ -82,15 +79,15 @@ else
 	util.AddNetworkString("revenants_bail_unit")
 	net.Receive("revenants_bail_unit",function(len,ply)--got a reply from the player
 		local amount=net.ReadUInt(32)
-		if ply.bail_amount and amount and ply:canAfford(amount) and ply.bail_amount<=amount and ply:isArrested() then
-			ply:addMoney(-amount)
-			DarkRP.notify(ply,3,8,"you paid "..DarkRP.formatMoney(amount).." for bail")
-			ply:unArrest(ply)
-			ply:Spawn()
-		elseif not ply.bail_amount and not amount then
-			ply:Kick("kicked for attempting to exploit \"revenants_bail_unit\"")
+		if ply.bail_amount and amount and ply.bail_cost_multiplier then
+			local price=math.Round(ply.bail_amount*ply.bail_cost_multiplier)
+			if ply:canAfford(amount) and price<=amount and ply:isArrested() then
+				ply:addMoney(-amount)
+				DarkRP.notify(ply,3,8,"you paid "..DarkRP.formatMoney(amount).." for bail")
+				ply:unArrest(ply)
+				ply:Spawn()
+			end
 		end
-		ply.bail_amount=nil
 	end)
 end
 scripted_ents.Register(ENT,ENT.ClassName)
@@ -103,13 +100,19 @@ hook.Add("playerArrested","bail_hooks",function(ply,time,cop)
 		umsg.End()
 	end)
 	ply.bail_cost_multiplier=0.1--starts at 10%
-	timer.Create(ply:SteamID64().."bail_timer",cfg.time*0.1,9,function()
-		if ply and ply:IsValid() then
+	ply.bail_amount=ply:getDarkRPVar("money")
+	local ID=ply:SteamID64()
+	timer.Create(ID.."bail_timer",cfg.time*0.1,9,function()
+		if ply and ply:IsValid() and ply.bail_cost_multiplier then
 			ply.bail_cost_multiplier=math.Clamp(ply.bail_cost_multiplier-0.01,0,1)--decrease it by 0.1%
+		else
+			timer.Remove(ID.."bail_timer")
 		end
 	end)
 end)
 hook.Add("playerUnArrested","bail_hooks",function(ply,cop)
+	ply.bail_amount=nil
+	ply.bail_cost_multiplier=nil
 	if ply!=cop then
 		ply:Spawn()
 	end

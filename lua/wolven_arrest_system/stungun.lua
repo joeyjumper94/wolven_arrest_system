@@ -95,6 +95,14 @@ do
 					end
 					ServerLog(log.."\n")
 					target:Freeze(true)
+					if cfg.police_damage and cfg.police_damage>0 then
+						local CTakeDamageInfo=DamageInfo()
+						CTakeDamageInfo:SetDamage(cfg.police_damage)
+						CTakeDamageInfo:SetDamageType(DMG_SHOCK)
+						CTakeDamageInfo:SetAttacker(Owner)
+						CTakeDamageInfo:SetInflictor(self)
+						target:TakeDamageInfo(CTakeDamageInfo)
+					end
 					target.tazed_police=true
 					timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
 						if target and target:IsValid() then
@@ -230,6 +238,14 @@ do
 					end
 					ServerLog(log.."\n")
 					target:Freeze(true)
+					if cfg.civilian_damage and cfg.civilian_damage>0 then
+						local CTakeDamageInfo=DamageInfo()
+						CTakeDamageInfo:SetDamage(cfg.civilian_damage)
+						CTakeDamageInfo:SetDamageType(DMG_SHOCK)
+						CTakeDamageInfo:SetAttacker(Owner)
+						CTakeDamageInfo:SetInflictor(self)
+						target:TakeDamageInfo(CTakeDamageInfo)
+					end
 					target.tazed_civilian=true
 					timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
 						if target and target:IsValid() then

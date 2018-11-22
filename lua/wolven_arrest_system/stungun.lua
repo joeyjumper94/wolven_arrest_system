@@ -103,6 +103,9 @@ do
 						CTakeDamageInfo:SetInflictor(self)
 						target:TakeDamageInfo(CTakeDamageInfo)
 					end
+					if target:InVehicle() then 
+						target:ExitVehicle()
+					end
 					target.tazed_police=true
 					timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
 						if target and target:IsValid() then
@@ -245,6 +248,9 @@ do
 						CTakeDamageInfo:SetAttacker(Owner)
 						CTakeDamageInfo:SetInflictor(self)
 						target:TakeDamageInfo(CTakeDamageInfo)
+					end
+					if target:InVehicle() then 
+						target:ExitVehicle()
 					end
 					target.tazed_civilian=true
 					timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()

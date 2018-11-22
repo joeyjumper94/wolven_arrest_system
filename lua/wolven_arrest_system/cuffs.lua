@@ -201,6 +201,11 @@ hook.Add("onLockpickCompleted","handcuff_hooks",function(Owner,success,target)
 		weapon:Remove()
 	end
 end)
+hook.Add("OnPlayerHitGround","handcuff_hooks",function(ply,inWater,onFloater,speed)
+	if ply:GetNWEntity("handcuff_drag_ply",NULL):IsValid() then
+		return true
+	end
+end)
 local keys=cfg.keys
 local valid={}
 for int,tbl in ipairs(keys) do
@@ -307,11 +312,6 @@ hook.Add("PlayerTick","handcuff_hooks",function(ply,mv)
 		end
 	end
 end)
-hook.Add("OnPlayerHitGround","handcuff_hooks",function(ply,inWater,onFloater,speed)
-	if ply:GetNWEntity("handcuff_drag_ply",NULL):IsValid() then
-		return true
-	end
-end)
 local doors={
 	prop_door_rotating=true,
 	func_door_rotating=true,
@@ -371,24 +371,27 @@ hook.Add("StartCommand","handcuff_hooks",function(ply,CUserCmd)
 	end
 end)
 hook.Add("WeaponEquip","handcuff_hooks",function(weapon,ply)
-	timer.Simple(0,function()
-		if weapon and ply and weapon:IsValid() and ply:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
-			ply:SelectWeapon("revenants_handcuffed")
-			if ply:isArrested() then
-				timer.Create(weapon:EntIndex().." removal timer",30,1,function()
-					if weapon and weapon:IsValid() then
-						weapon:Remove()
-					end
-				end)
-			elseif cfg.cuff_timer then
-				timer.Create(weapon:EntIndex().." removal timer",cfg.cuff_timer,1,function()
-					if weapon and weapon:IsValid() then
-						weapon:Remove()
-					end
-				end)
+	if weapon and ply and weapon:IsValid() and ply:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
+		if ply:InVehicle() then ply:ExitVehicle() end--if in a vehicle exit so the stuff below works
+		timer.Simple(0,function()
+			if weapon and ply and weapon:IsValid() and ply:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
+				ply:SelectWeapon("revenants_handcuffed")
+				if ply:isArrested() then
+					timer.Create(weapon:EntIndex().." removal timer",30,1,function()
+						if weapon and weapon:IsValid() then
+							weapon:Remove()
+						end
+					end)
+				elseif cfg.cuff_timer then
+					timer.Create(weapon:EntIndex().." removal timer",cfg.cuff_timer,1,function()
+						if weapon and weapon:IsValid() then
+							weapon:Remove()
+						end
+					end)
+				end
 			end
-		end
-	end)
+		end)
+	end
 end)
 do
 	local SWEP={

@@ -33,13 +33,46 @@ local func=function()
 				n:SetModel(v:GetModel())
 				n:SetAngles(v:GetAngles())
 				n:Spawn()
+				n:SetNWBool("map_ent_replacement",true)--set a networked bool on the ent for the next 8 hooks
 				v:Remove()
 			end
 		end
 	end
 end
-hook.Add("PostCleanupMap","wolven_arrest_system_general_hooks",func)
+hook.Add("PostCleanupMap","wolven_arrest_system_general_hooks",function()
+	timer.Simple(15,func)
+end)
 hook.Add("InitPostEntity","wolven_arrest_system_general_hooks",func)
+hook.Add("PhysgunPickup","wolven_arrest_system_general_hooks",function(Ply,Ent)
+	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+end)
+hook.Add("CanDrive","wolven_arrest_system_general_hooks",function(Ply,Ent)
+	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+end)
+hook.Add("CanTool","wolven_arrest_system_general_hooks",function(Ply,trace,tool)
+	if !trace then return false end
+	local Ent=trace.Entity
+	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+end)
+hook.Add("CanProperty","wolven_arrest_system_general_hooks",function(Ply,property,Ent)
+	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+end)
+hook.Add("CanEditVariable","wolven_arrest_system_general_hooks",function(Ent,Ply)
+	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+end)
+hook.Add("OnPhysgunReload","wolven_arrest_system_general_hooks",function(Physgun,Ply)
+	if !(Ply and Ply:IsValid()) then return false end
+	local trace=Ply:GetEyeTrace()
+	if !trace then return false end
+	local Ent=trace.Entity
+	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+end)
+hook.Add("PlayerUse","wolven_arrest_system_general_hooks",function(Ply,Ent)
+--	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+end)
+hook.Add("CanPlayerUnfreeze","wolven_arrest_system_general_hooks",function(Ply,Ent,PhysObj)
+	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+end)
 local blacklist={
 	revenants_prison_looting="i don't think i want to put that in my pocket",
 	revenants_booking_station="it's secured in place",

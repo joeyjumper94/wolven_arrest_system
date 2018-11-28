@@ -13,7 +13,7 @@ do
 		Contact="",--(Clientside) The contacts of the SWEP creator to be shown in weapon selection--Default: ""
 		Purpose="stun players to help arresting or discipline",--(Clientside) The purpose of the SWEP creator to be shown in weapon selection--Default: ""
 		Instructions="",--(Clientside) How to use your weapon, to be shown in weapon selection--Default: ""
-		ViewModel="models/weapons/c_bugbait.mdl",--Path to the view model for your SWEP (what the wielder will see)--Default: "models/weapons/v_pistol.mdl"
+		ViewModel="models/weapons/c_medkit.mdl",--Path to the view model for your SWEP (what the wielder will see)--Default: "models/weapons/v_pistol.mdl"
 		ViewModelFlip=false,--(Clientside) Should we flip the view model? This is needed for some CS:S view models--Default: false
 		ViewModelFlip1=false,--(Clientside) Same as ViewModelFlip, but for the second viewmodel--Default: false
 		ViewModelFlip2=false,--(Clientside) Same as ViewModelFlip, but for the third viewmodel--Default: false

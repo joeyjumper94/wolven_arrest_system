@@ -5,6 +5,20 @@ if CLIENT then
 	net.Receive("wolven_arrest_system.console_log",function(len,ply)
 		MsgC(unpack(net.ReadTable()))
 	end)
+	hook.Add("PhysgunPickup","wolven_arrest_system_general_hooks",function(Ply,Ent)
+		if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+	end)
+	hook.Add("CanDrive","wolven_arrest_system_general_hooks",function(Ply,Ent)
+		if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+	end)
+	hook.Add("CanTool","wolven_arrest_system_general_hooks",function(Ply,trace,tool)
+		if !trace then return false end
+		local Ent=trace.Entity
+		if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+	end)
+	hook.Add("CanProperty","wolven_arrest_system_general_hooks",function(Ply,property,Ent)
+		if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
+	end)
 	return
 end
 util.AddNetworkString("wolven_arrest_system.console_log")

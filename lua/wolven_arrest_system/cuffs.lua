@@ -98,32 +98,28 @@ meta.AddKey=function(CUserCmd,KEY)
 end--]]
 hook.Add("canArrest","handcuff_hooks",function(cop,ply)
 	if ply:isArrested() then return end--already arrested, let them put them back in their cell
-	local weapon=ply:GetActiveWeapon()
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+	if ply:IsCuffed() then
 		return--allow arrest
 	end
 	return false,"it's customary to put the cuffs on when arresting someone"
 end)
 hook.Add("canDropWeapon","handcuff_hooks",function(ply,weapon)
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+	if ply:IsCuffed() then
 		return false--prevent dropping
 	end
 end)
 hook.Add("canLockpick","handcuff_hooks",function(ply,ent,trace)
-	local weapon=ent:IsValid() and ent:IsPlayer() and ent:GetActiveWeapon()
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+	if ent:IsValid() and ent:IsPlayer() and ent:IsCuffed() then
 		return true
 	end
 end)
 hook.Add("CanPlayerEnterVehicle","handcuff_hooks",function(ply,vehicle,role)
-	local weapon=cfg.NoDrive and ply:GetActiveWeapon()
-	if vehicle and weapon and vehicle:IsValid() and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" and vehicle:GetClass()=="prop_vehicle_prisoner_pod" then
+	if cfg.NoDrive and ply:IsCuffed() and vehicle and vehicle:IsValid() and vehicle:GetClass()=="prop_vehicle_prisoner_pod" then
 		return false--vehicle entry
 	end
 end)
 hook.Add("CanPlayerSuicide","handcuff_hooks",function(ply)
-	local weapon=ply:GetActiveWeapon()
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+	if ply:IsCuffed() then
 		DarkRP.notify(ply,1,8,"you cannot suicide while cuffed")
 		return false--prevent suicide
 	end
@@ -139,25 +135,18 @@ hook.Add("HUDPaint","handcuff_hooks",function()
 			render.DrawBeam(ppos,tpos,1,0,0,Color(255,255,255))
 		end
 		cam.End3D()
-		if cfg.drawhud then
-			if ply!=LocalPlayer() then
+		if cfg.drawhud and ply!=LocalPlayer() and LocalPlayer():GetPos():DistToSqr(ply:GetPos())<250000 and ply:IsCuffed() then
+			local trace=util.TraceLine{
+				start=LocalPlayer():GetShootPos(),
+				endpos=ply:GetShootPos(),
+				filter={
+					ply,
+					LocalPlayer(),
+				},
+			}
+			if !trace.Hit then
 				local pos=(vector_up*40+ply:GetPos()):ToScreen()
-				if LocalPlayer():GetPos():DistToSqr(ply:GetPos())<250000 then
-					local weapon=ply:GetActiveWeapon()
-					if weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
-						local trace=util.TraceLine{
-							start=LocalPlayer():GetShootPos(),
-							endpos=ply:GetShootPos(),
-							filter={
-								ply,
-								LocalPlayer(),
-							},
-						}
-						if !trace.Hit then
-							draw.DrawText("HANDCUFFED","Trebuchet24",pos.x,pos.y,Color(255,0,0),TEXT_ALIGN_CENTER)
-						end
-					end
-				end
+				draw.DrawText("HANDCUFFED","Trebuchet24",pos.x,pos.y,Color(255,0,0),TEXT_ALIGN_CENTER)
 			end
 		end
 	end
@@ -168,9 +157,8 @@ local ULX_FUNC=function()
 		function ulx.uncuff(admin,targets)
 			local affected={}
 			for k,target in ipairs(targets) do
-				local weapon=target:GetActiveWeapon()
-				if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
-					weapon:Remove()
+				if target:IsCuffed() then
+					target:GetActiveWeapon():Remove()
 					table.insert(affected,target)
 				end
 			end
@@ -189,8 +177,7 @@ end
 hook.Add("Initialize","handcuff_hooks",ULX_FUNC)
 if GAMEMODE and GAMEMODE.Config or player.GetAll()[1] then ULX_FUNC() end
 hook.Add("onLockpickCompleted","handcuff_hooks",function(Owner,success,target)
-	local weapon=SERVER and success and target:IsValid() and target:IsPlayer() and target:GetActiveWeapon()
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+	if SERVER and target:IsPlayer() and target:IsCuffed() then
 		local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
 		wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a lockpick","\n"})
 		local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a lockpick"
@@ -243,8 +230,7 @@ hook.Add("PlayerButtonDown","handcuff_hooks",function(target,button)
 end)
 hook.Add("playerCanChangeTeam","handcuff_hooks",function(ply,team,force)
 	if force==true then return end
-	local weapon=ply:GetActiveWeapon()
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+	if ply:IsCuffed() then
 		return false,"get someone to break you out of these cuffs first"--job change and tell why
 	end
 end)
@@ -263,12 +249,9 @@ end)
 gameevent.Listen( "player_disconnect" )
 hook.Add("player_disconnect","handcuff_hooks",function(data)
 	if SERVER and data.userid then
-	local ply=Player(data.userid)
-		if ply and ply:IsValid() and cfg.remember_arrested then
-			local weapon=ply:GetActiveWeapon()
-			if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
-				wolven_arrest_system.LTAP[ply:SteamID()]=true
-			end
+		local ply=Player(data.userid)
+		if ply and ply:IsValid() and cfg.remember_arrested and ply:IsCuffed() then
+			wolven_arrest_system.LTAP[ply:SteamID()]=true
 		end
 	end
 end)
@@ -278,23 +261,20 @@ hook.Add("PlayerGiveSWEP","handcuff_hooks",function(ply,class,SWEP)
 	end
 end)
 hook.Add("PlayerSpawnObject","handcuff_hooks",function(ply)
-	local weapon=ply:GetActiveWeapon()
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+	if ply:IsCuffed() then
 		return false--prevent spawning stuff
 	end
 end)
 hook.Add("PlayerSwitchWeapon","handcuff_hooks",function(ply,old,new)
-	local weapon=ply:GetActiveWeapon()
-	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+	if ply:IsCuffed() then
 		return true--prevent switching
 	end
 end)
 hook.Add("PlayerTick","handcuff_hooks",function(ply,mv)
 	if !cfg.allow_drag then return end
-	local target=ply:GetNWEntity("handcuff_drag")
+	local target=ply:GetNWEntity("handcuff_drag",NULL)
 	if target:IsValid() then--are they being dragged
-		local weapon=target:GetActiveWeapon()
-		if weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
+		if target:IsCuffed() then
 			ppos=ply:GetShootPos()
 			tpos=target:GetPos()
 			if tpos:DistToSqr(ppos)>cfg.slack*cfg.slack then
@@ -318,13 +298,12 @@ local doors={
 	func_door=true,
 	func_button=true,
 	func_rot_button=true,
+	revenants_booking_station=true,
 }
 hook.Add("PlayerUse","handcuff_hooks",function(ply,target)
 	if !cfg.allow_drag then return end
 	if ply.handcuff_drag_use and ply.handcuff_drag_use>CurTime() then return end
 	if doors[target:GetClass()] then return end
-	local weapon=target.GetActiveWeapon and target:GetActiveWeapon()
-	
 	if ply:GetNWEntity("handcuff_drag",NULL):IsValid() then
 		local old_target=ply:GetNWEntity("handcuff_drag",NULL)
 		if old_target:IsValid() then
@@ -332,7 +311,7 @@ hook.Add("PlayerUse","handcuff_hooks",function(ply,target)
 		end
 		ply:SetNWEntity("handcuff_drag",NULL)
 		ply.handcuff_drag_use=CurTime()+5
-	elseif weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
+	elseif target:IsPlayer() and target:IsCuffed() then
 		local original=target:GetNWEntity("handcuff_drag_ply",NULL)
 		if original:IsValid() then
 			--being dragged by someone else
@@ -638,4 +617,12 @@ do
 		end,
 	}
 	weapons.Register(SWEP,SWEP.ClassName)
+end
+local Player=FindMetaTable("Player")
+Player.IsCuffed=function(ply)
+	local weapon=ply:GetActiveWeapon()
+	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+		return true
+	end
+	return false
 end

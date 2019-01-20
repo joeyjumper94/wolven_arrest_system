@@ -15,20 +15,8 @@ wolven_arrest_system={
 			weapon_bugbait=true,
 		},
 		loot={
-			"lockpick",--if it's a string, we'll assume you meant to give a weapon
-			"lockpick",
 			"pro_lockpick",
-			"door_ram",
-			"weapon_sh_doorcharge",
-			"weapon_hl2brokenbottle",
-			"cw_m1911",
-			"cw_fiveseven",
-			"weapon_crowbar",
-			"revenants_stungun_police",
-			"keypad_cracker",
-			"prokeypadcracker",
 			"weapon_blowtorch",
-			"stunstick",
 			"weapon_hl2pipe",
 			"weapon_hl2bottle",
 			function(ply,self,whitelist)--it can also be a function
@@ -139,6 +127,8 @@ wolven_arrest_system={
 		taser_hud=true,--should we draw a hud with the taser?
 		disallow_suicide_police=true,--disallow suicide if a player was tased by a police issue taser?
 		disallow_suicide_civilian=false,--disallow suicide if a player was tased by a civilian issue taser?
+		untaze_on_death_police=true,--remove the taze effect from police taser on death
+		untaze_on_death_civilian=true,--remove the taze effect from civilian taser on death
 	},
 	cuffs={
 		NoDrive=true,--prevent players from entering vehicles,
@@ -179,8 +169,8 @@ if you make it out the door, your arrested status will be removed, though you wi
 		arrest_cp=true,--allow arresting of CPs at all?
 		arrest_chief=false,--allow arresting of the chief?
 		booking_only=false,--only allow by the booking unit?
-		reward=500,--pay cops this much when arresting someone
-		noabaton=true,--remove arrest batons from people?
+		reward=2000,--pay cops this much when arresting someone
+		noabaton=false,--remove arrest batons from people?
 		remember_arrested=true,--remember who is arrested incase they try rejoining to get out of jail?
 	},
 	bail={

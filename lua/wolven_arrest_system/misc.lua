@@ -1,26 +1,67 @@
+local disabled_til=0
+hook.Add("PhysgunPickup","_rp_downtown_em_hs_lua",function(Ply,Ent)
+	if disabled_til>CurTime() then return end
+	if Ent and Ent:IsValid() and Ent:GetNWBool("wolven_arrest_system_replacement",false) then return false end
+end)
+hook.Add("CanDrive","_rp_downtown_em_hs_lua",function(Ply,Ent)
+	if disabled_til>CurTime() then return end
+	if Ent and Ent:IsValid() and Ent:GetNWBool("wolven_arrest_system_replacement",false) then return false end
+end)
+hook.Add("CanTool","_rp_downtown_em_hs_lua",function(Ply,trace,tool)
+	if disabled_til>CurTime() then return end
+	if !trace then return false end
+	local Ent=trace.Entity
+	if Ent and Ent:IsValid() and Ent:GetNWBool("wolven_arrest_system_replacement",false) then return false end
+end)
+hook.Add("CanProperty","_rp_downtown_em_hs_lua",function(Ply,property,Ent)
+	if disabled_til>CurTime() then return end
+	if Ent and Ent:IsValid() and Ent:GetNWBool("wolven_arrest_system_replacement",false) then return false end
+end)
+hook.Add("CanEditVariable","_rp_downtown_em_hs_lua",function(Ent,Ply)
+	if disabled_til>CurTime() then return end
+	if Ent and Ent:IsValid() and Ent:GetNWBool("wolven_arrest_system_replacement",false) then return false end
+end)
+hook.Add("OnPhysgunReload","_rp_downtown_em_hs_lua",function(Physgun,Ply)
+	if disabled_til>CurTime() then return end
+	if !(Ply and Ply:IsValid()) then return false end
+	local trace=Ply:GetEyeTrace()
+	if !trace then return false end
+	local Ent=trace.Entity
+	if Ent and Ent:IsValid() and Ent:GetNWBool("wolven_arrest_system_replacement",false) then return false end
+end)
+hook.Add("PlayerUse","_rp_downtown_em_hs_lua",function(Ply,Ent)
+--		if Ent and Ent:IsValid() and Ent:GetNWBool("wolven_arrest_system_replacement",false) then return false end
+end)
+hook.Add("CanPlayerUnfreeze","_rp_downtown_em_hs_lua",function(Ply,Ent,PhysObj)
+	if disabled_til>CurTime() then return end
+	if Ent and Ent:IsValid() and Ent:GetNWBool("wolven_arrest_system_replacement",false) then return false end
+end)
+
 if CLIENT then 
+	concommand.Add("wolven_arrest_system_disable_protection",function(ply,cmd,args)
+		net.Start("wolven_arrest_system_disable_protection")
+		net.SendToServer()
+	end)
+	net.Receive("wolven_arrest_system_disable_protection",function(len,ply)
+		disabled_til=net.ReadFloat()
+	end)
 	wolven_arrest_system.booking_arrest_msg=function()
 		LocalPlayer():PrintMessage(HUD_PRINTTALK,wolven_arrest_system.booking.target_notify)
 	end
 	net.Receive("wolven_arrest_system.console_log",function(len,ply)
 		MsgC(unpack(net.ReadTable()))
 	end)
-	hook.Add("PhysgunPickup","wolven_arrest_system_general_hooks",function(Ply,Ent)
-		if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-	end)
-	hook.Add("CanDrive","wolven_arrest_system_general_hooks",function(Ply,Ent)
-		if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-	end)
-	hook.Add("CanTool","wolven_arrest_system_general_hooks",function(Ply,trace,tool)
-		if !trace then return false end
-		local Ent=trace.Entity
-		if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-	end)
-	hook.Add("CanProperty","wolven_arrest_system_general_hooks",function(Ply,property,Ent)
-		if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-	end)
 	return
 end
+net.Receive("wolven_arrest_system_disable_protection",function(len,ply)
+	if ply:IsSuperAdmin() or ply.IsListenServerHost and ply:IsListenServerHost() then
+		disabled_til=CurTime()+10
+		net.Start("wolven_arrest_system_disable_protection")
+		net.WriteFloat(disabled_til)
+		net.Broadcast()
+	end
+end)
+util.AddNetworkString("wolven_arrest_system_disable_protection")
 util.AddNetworkString("wolven_arrest_system.console_log")
 wolven_arrest_system.console_log=function(log)
 	local send={}
@@ -47,46 +88,14 @@ local func=function()
 				n:SetModel(v:GetModel())
 				n:SetAngles(v:GetAngles())
 				n:Spawn()
-				n:SetNWBool("map_ent_replacement",true)--set a networked bool on the ent for the next 8 hooks
+				n:SetNWBool("wolven_arrest_system_replacement",true)
 				v:Remove()
 			end
 		end
 	end
 end
-hook.Add("PostCleanupMap","wolven_arrest_system_general_hooks",function()
-	timer.Simple(15,func)
-end)
+hook.Add("PostCleanupMap","wolven_arrest_system_general_hooks",func)
 hook.Add("InitPostEntity","wolven_arrest_system_general_hooks",func)
-hook.Add("PhysgunPickup","wolven_arrest_system_general_hooks",function(Ply,Ent)
-	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-end)
-hook.Add("CanDrive","wolven_arrest_system_general_hooks",function(Ply,Ent)
-	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-end)
-hook.Add("CanTool","wolven_arrest_system_general_hooks",function(Ply,trace,tool)
-	if !trace then return false end
-	local Ent=trace.Entity
-	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-end)
-hook.Add("CanProperty","wolven_arrest_system_general_hooks",function(Ply,property,Ent)
-	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-end)
-hook.Add("CanEditVariable","wolven_arrest_system_general_hooks",function(Ent,Ply)
-	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-end)
-hook.Add("OnPhysgunReload","wolven_arrest_system_general_hooks",function(Physgun,Ply)
-	if !(Ply and Ply:IsValid()) then return false end
-	local trace=Ply:GetEyeTrace()
-	if !trace then return false end
-	local Ent=trace.Entity
-	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-end)
-hook.Add("PlayerUse","wolven_arrest_system_general_hooks",function(Ply,Ent)
---	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-end)
-hook.Add("CanPlayerUnfreeze","wolven_arrest_system_general_hooks",function(Ply,Ent,PhysObj)
-	if Ent and Ent:IsValid() and Ent:GetNWBool("map_ent_replacement",false) then return false end
-end)
 local blacklist={
 	revenants_prison_looting="i don't think i want to put that in my pocket",
 	revenants_booking_station="it's secured in place",

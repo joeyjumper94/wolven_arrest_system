@@ -31,8 +31,8 @@ do
 		RenderGroup=RENDERGROUP_OPAQUE,--(Clientside) The SWEP render group, see RENDERGROUP_ Enums--Default: RENDERGROUP_OPAQUE
 		Slot=2,--Slot in the weapon selection menu, starts with 0--Default: 0
 		SlotPos=10,--Position in the slot, should be in the range 0-128--Default: 10
-		SpeechBubbleLid=surface and surface.GetTextureID and surface.GetTextureID("gui/speech_lid" ),--(Clientside) Internal variable for drawing the info box in weapon selection--Default: surface.GetTextureID("gui/speech_lid" )
-		WepSelectIcon=surface and surface.GetTextureID and surface.GetTextureID("weapons/swep" ),--(Clientside) Path to an texture. Override this in your SWEP to set the icon in the weapon selection. This must be the texture ID, see surface.GetTextureID--Default: surface.GetTextureID("weapons/swep" )
+		SpeechBubbleLid=surface and surface.GetTextureID and surface.GetTextureID("gui/speech_lid"),--(Clientside) Internal variable for drawing the info box in weapon selection--Default: surface.GetTextureID("gui/speech_lid")
+		WepSelectIcon=surface and surface.GetTextureID and surface.GetTextureID("weapons/swep"),--(Clientside) Path to an texture. Override this in your SWEP to set the icon in the weapon selection. This must be the texture ID, see surface.GetTextureID--Default: surface.GetTextureID("weapons/swep")
 		CSMuzzleFlashes=false,--(Clientside) Should we use Counter-Strike muzzle flashes upon firing? This is required for DoD:S or CS:S view models to fix their muzzle flashes.--Default: false
 		CSMuzzleX=false,--(Clientside) Use the X shape muzzle flash instead of the default Counter-Strike muzzle flash. Requires CSMuzzleFlashes to be set to true--Default: false
 		Primary={--Primary attack settings. The table contains these fields:--    
@@ -61,13 +61,13 @@ do
 		end,
 		PrimaryAttack=function(self)
 			if self.CoolDown and self.CoolDown>CurTime() then
-				self:EmitSound("Weapon_Pistol.Empty" )
+				self:EmitSound("Weapon_Pistol.Empty")
 				return
 			end
 			self:EmitSound"Weapon_M4A1.Silenced"
 			local Owner=self.Owner
 			if Owner:IsPlayer() then
-				Owner:LagCompensation(true )
+				Owner:LagCompensation(true)
 			end
 			local trace=util.TraceLine({
 				start=Owner:GetShootPos(),
@@ -77,7 +77,7 @@ do
 				}
 			})
 			if Owner:IsPlayer() then
-				Owner:LagCompensation(false )
+				Owner:LagCompensation(false)
 			end
 			if SERVER then
 				local target=trace.Entity
@@ -117,17 +117,17 @@ do
 			end
 			if !IsFirstTimePredicted() then return end
 			local effectdata = EffectData()
-			effectdata:SetOrigin(trace.HitPos )
-			effectdata:SetNormal(trace.HitNormal )
-			effectdata:SetEntity(trace.Entity )
-			effectdata:SetAttachment(trace.PhysicsBone )
+			effectdata:SetOrigin(trace.HitPos)
+			effectdata:SetNormal(trace.HitNormal)
+			effectdata:SetEntity(trace.Entity)
+			effectdata:SetAttachment(trace.PhysicsBone)
 			util.Effect(trace.Entity and trace.Entity:IsValid() and trace.Entity:IsPlayer() and "cball_explode" or "MuzzleFlash", effectdata)
 			local effectdata = EffectData()
-			effectdata:SetOrigin(trace.HitPos )
-			effectdata:SetStart(self.Owner:GetShootPos() )
-			effectdata:SetAttachment(1 )
-			effectdata:SetEntity(self )
-			util.Effect("ToolTracer", effectdata )
+			effectdata:SetOrigin(trace.HitPos)
+			effectdata:SetStart(self.Owner:GetShootPos())
+			effectdata:SetAttachment(1)
+			effectdata:SetEntity(self)
+			util.Effect("ToolTracer", effectdata)
 			self.CoolDown=CurTime()+cfg.recharge_time
 		end,
 		DrawHUD=function(self)
@@ -178,8 +178,8 @@ do
 		RenderGroup=RENDERGROUP_OPAQUE,--(Clientside) The SWEP render group, see RENDERGROUP_ Enums--Default: RENDERGROUP_OPAQUE
 		Slot=2,--Slot in the weapon selection menu, starts with 0--Default: 0
 		SlotPos=10,--Position in the slot, should be in the range 0-128--Default: 10
-		SpeechBubbleLid=surface and surface.GetTextureID and surface.GetTextureID("gui/speech_lid" ),--(Clientside) Internal variable for drawing the info box in weapon selection--Default: surface.GetTextureID("gui/speech_lid" )
-		WepSelectIcon=surface and surface.GetTextureID and surface.GetTextureID("weapons/swep" ),--(Clientside) Path to an texture. Override this in your SWEP to set the icon in the weapon selection. This must be the texture ID, see surface.GetTextureID--Default: surface.GetTextureID("weapons/swep" )
+		SpeechBubbleLid=surface and surface.GetTextureID and surface.GetTextureID("gui/speech_lid"),--(Clientside) Internal variable for drawing the info box in weapon selection--Default: surface.GetTextureID("gui/speech_lid")
+		WepSelectIcon=surface and surface.GetTextureID and surface.GetTextureID("weapons/swep"),--(Clientside) Path to an texture. Override this in your SWEP to set the icon in the weapon selection. This must be the texture ID, see surface.GetTextureID--Default: surface.GetTextureID("weapons/swep")
 		CSMuzzleFlashes=false,--(Clientside) Should we use Counter-Strike muzzle flashes upon firing? This is required for DoD:S or CS:S view models to fix their muzzle flashes.--Default: false
 		CSMuzzleX=false,--(Clientside) Use the X shape muzzle flash instead of the default Counter-Strike muzzle flash. Requires CSMuzzleFlashes to be set to true--Default: false
 		Primary={--Primary attack settings. The table contains these fields:--    
@@ -207,13 +207,13 @@ do
 		end,
 		PrimaryAttack=function(self)
 			if self.CoolDown and self.CoolDown>CurTime() then
-				self:EmitSound("Weapon_Pistol.Empty" )
+				self:EmitSound("Weapon_Pistol.Empty")
 				return
 			end
 			self:EmitSound"Weapon_M4A1.Silenced"
 			local Owner=self.Owner
 			if Owner:IsPlayer() then
-				Owner:LagCompensation(true )
+				Owner:LagCompensation(true)
 			end
 			local trace=util.TraceLine({
 				start=Owner:GetShootPos(),
@@ -263,17 +263,17 @@ do
 			end
 			if !IsFirstTimePredicted() then return end
 			local effectdata = EffectData()
-			effectdata:SetOrigin(trace.HitPos )
-			effectdata:SetNormal(trace.HitNormal )
-			effectdata:SetEntity(trace.Entity )
-			effectdata:SetAttachment(trace.PhysicsBone )
+			effectdata:SetOrigin(trace.HitPos)
+			effectdata:SetNormal(trace.HitNormal)
+			effectdata:SetEntity(trace.Entity)
+			effectdata:SetAttachment(trace.PhysicsBone)
 			util.Effect(trace.Entity and trace.Entity:IsValid() and trace.Entity:IsPlayer() and "cball_explode" or "MuzzleFlash", effectdata)
 			local effectdata = EffectData()
-			effectdata:SetOrigin(trace.HitPos )
-			effectdata:SetStart(self.Owner:GetShootPos() )
-			effectdata:SetAttachment(1 )
-			effectdata:SetEntity(self )
-			util.Effect("ToolTracer", effectdata )
+			effectdata:SetOrigin(trace.HitPos)
+			effectdata:SetStart(self.Owner:GetShootPos())
+			effectdata:SetAttachment(1)
+			effectdata:SetEntity(self)
+			util.Effect("ToolTracer", effectdata)
 			self.CoolDown=CurTime()+cfg.recharge_time
 		end,
 		DrawHUD=function(self)
@@ -308,6 +308,15 @@ hook.Add("CanPlayerSuicide","taser_hooks",function(target)
 	elseif target.tazed_civilian and cfg.disallow_suicide_civilian then
 		DarkRP.notify(target,1,8,"wait until the stun effect wears off")
 		return false
+	end
+end)
+hook.Add("PlayerDeath","taser_hooks",function(ply,weapon,killer)
+	if cfg.untaze_on_death_civilian and ply.tazed_civilian then
+		ply.tazed_civilian=nil
+		ply:Freeze(false)
+	elseif cfg.untaze_on_death_police and ply.tazed_police then
+		ply.tazed_police=nil
+		ply:Freeze(false)
 	end
 end)
 local togive={}

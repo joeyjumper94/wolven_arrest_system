@@ -58,7 +58,8 @@ function ENT:Arrest(target,ply)
 		hook.Run("playerArrested",target,time,ply)
 		return 0,true
 	end
-	if target:IsCuffed() then
+	local weapon=target:GetActiveWeapon()
+	if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed" then
 		if not cfg.arrest_cp and target:isCP() then
 			weapon:Remove()
 			DarkRP.notify(ply,1,8,DarkRP.getPhrase("cant_arrest_other_cp"))
@@ -81,11 +82,9 @@ function ENT:Arrest(target,ply)
 					target:SendLua("wolven_arrest_system.booking_arrest_msg()")
 				end
 				hook.Run("playerArrested",target,time,ply)
-				local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
---				wolven_arrest_system.console_log({r,ply:Name(),b," (",r,ply:SteamID(),b,") <",r,team.GetName(ply:Team()),b,"> {",r,ply:getDarkRPVar("job"),b,"} arrested ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"}"})
 				local log=ply:Name().." ("..ply:SteamID()..") arrested "..target:Name()
 				if DarkRP then
-					DarkRP.log(log,Color(0,255,255))
+					DarkRP.log(log, Color(0, 255, 255))
 				end
 				ServerLog(log.."\n")
 				return 1,true
@@ -96,18 +95,20 @@ function ENT:Arrest(target,ply)
 end
 scripted_ents.Register(ENT,ENT.ClassName)
 hook.Add("canArrest","booking_hooks",function(cop,ply,by_unit)
-	if ply:isArrested() then return end--already arrested,let them put them back in their cell
+	if ply:isArrested() then return end--already arrested, let them put them back in their cell
 	if not cfg.booking_only or by_unit then
 		return--allow arrest
 	end
 	return false,"you can only arrest by the booking unit"
 end)
-gameevent.Listen("player_disconnect")
-hook.Add("player_disconnect","handcuff_hooks",function(data)
+gameevent.Listen( "player_disconnect" )
+hook.Add( "player_disconnect", "handcuff_hooks", function( data )
 	if SERVER and data.userid then
 		local ply=Player(data.userid)
-		if ply and ply:IsValid() and cfg.remember_arrested and ply:isArrested() then
-			wolven_arrest_system.LTAP[ply:SteamID()]=true
+		if ply and ply:IsValid() and cfg.remember_arrested then
+			if ply:isArrested() then
+				wolven_arrest_system.LTAP[ply:SteamID()]=true
+			end
 		end
 	end
 end)

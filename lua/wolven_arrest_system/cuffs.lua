@@ -55,40 +55,40 @@ do
 		DisableDuplicator=true,--Disable the ability for players to duplicate this SWEP--Default: false
 		ScriptedEntityType="weapon",--(Clientside) Sets the spawnmenu content icon type for the entity, used by spawnmenu in the Sandbox-derived gamemodes. See spawnmenu.AddContentType for more information.--Default: "weapon"
 		m_bPlayPickupSound=true,--If set to false, the weapon will not play the weapon pick up sound when picked up.--Default: true --
-		OnRemove=function(self)
-			if CLIENT and LocalPlayer()==self.Owner then
-				RunConsoleCommand"lastinv"
-			end
-			timer.Remove(self:EntIndex().." removal timer")
-		end,
-		PrimaryAttack=function(self) end,
-		SecondaryAttack=function(self) end,
-		Reload=function(self) end,
-		Initialize=function(self)
-			self:SetColor(Color(0,0,0,0))
-			self:SetMaterial("models/effects/vol_light001")
-			self:SetHoldType("duel")
-		end,
-		DrawWorldModel=function()end,
-		PreDrawViewModel=function(self,vm,weapon,ply)
-			local hands=ply:GetHands()
-			if hook.Run("PreDrawPlayerHands",hands,vm,ply,weapon) then
-				return true
-			end
-			hands:DrawModel()
-			hook.Run("PostDrawPlayerHands",hands,vm,ply,weapon)
-			return true
-		end,
-		DrawHUD=function(self)
-			local Owner=self.Owner
-			local left=math.Round(Owner:GetNWFloat("handcuff_adrenaline",0)-CurTime(),2)
-			if left>0 then
-				cam.Start2D()
-				draw.DrawText("Adrenaline left: "..left,"Trebuchet24",ScrW()*0.9,ScrH()*.7,Color(255,0,0),TEXT_ALIGN_CENTER)
-				cam.End2D()
-			end
-		end,
 	}
+	SWEP.OnRemove=function(self)
+		if CLIENT and LocalPlayer()==self.Owner then
+			RunConsoleCommand"lastinv"
+		end
+		timer.Remove(self:EntIndex().." removal timer")
+	end
+	SWEP.PrimaryAttack=function(self) end
+	SWEP.SecondaryAttack=function(self) end
+	SWEP.Reload=function(self) end
+	SWEP.Initialize=function(self)
+		self:SetColor(Color(0,0,0,0))
+		self:SetMaterial("models/effects/vol_light001")
+		self:SetHoldType("duel")
+	end
+	SWEP.DrawWorldModel=function()end
+	SWEP.PreDrawViewModel=function(self,vm,weapon,ply)
+		local hands=ply:GetHands()
+		if hook.Run("PreDrawPlayerHands",hands,vm,ply,weapon) then
+			return true
+		end
+		hands:DrawModel()
+		hook.Run("PostDrawPlayerHands",hands,vm,ply,weapon)
+		return true
+	end
+	SWEP.DrawHUD=function(self)
+		local Owner=self.Owner
+		local left=math.Round(Owner:GetNWFloat("handcuff_adrenaline",0)-CurTime(),2)
+		if left>0 then
+			cam.Start2D()
+			draw.DrawText("Adrenaline left: "..left,"Trebuchet24",ScrW()*0.9,ScrH()*.7,Color(255,0,0),TEXT_ALIGN_CENTER)
+			cam.End2D()
+		end
+	end
 	weapons.Register(SWEP,SWEP.ClassName)
 end
 --[[
@@ -168,7 +168,7 @@ local ULX_FUNC=function()
 				ULib.tsayError(admin,"nobody on the server that you targeted with the command had cuffs on",true)
 			end
 		end
-		local uncuff = ulx.command( CATEGORY_NAME, "ulx uncuff", ulx.uncuff, "!uncuff", false, false, true )
+		local uncuff=ulx.command( CATEGORY_NAME, "ulx uncuff", ulx.uncuff, "!uncuff", false, false, true )
 		uncuff:addParam{type=ULib.cmds.PlayersArg}
 		uncuff:defaultAccess( ULib.ACCESS_ADMIN)
 		uncuff:help( "command to uncuff players" )
@@ -177,15 +177,16 @@ end
 hook.Add("Initialize","handcuff_hooks",ULX_FUNC)
 if GAMEMODE and GAMEMODE.Config or player.GetAll()[1] then ULX_FUNC() end
 hook.Add("onLockpickCompleted","handcuff_hooks",function(Owner,success,target)
-	if SERVER and target:IsPlayer() and target:IsCuffed() then
+	if SERVER and target:IsPlayer() and target:IsCuffed() and success then
+		target:GetActiveWeapon():Remove()
 		local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
-		wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a lockpick","\n"})
-		local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a lockpick"
+		local OW=Owner:GetActiveWeapon()
+		wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a "..(OW.PrintName or OW:GetClass()),"\n"})
+		local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..(OW.PrintName or OW:GetClass())
 		if DarkRP then
 			--DarkRP.log(log, Color(0, 255, 255))
 		end
 		ServerLog(log.."\n")
-		weapon:Remove()
 	end
 end)
 hook.Add("OnPlayerHitGround","handcuff_hooks",function(ply,inWater,onFloater,speed)
@@ -316,6 +317,9 @@ hook.Add("PlayerUse","handcuff_hooks",function(ply,target)
 		if original:IsValid() then
 			--being dragged by someone else
 		else
+			if cfg.reset_adrenaline then
+				target:SetNWFloat("handcuff_adrenaline",0)
+			end
 			ply:SetNWEntity("handcuff_drag",target)
 			target:SetNWEntity("handcuff_drag_ply",ply)
 		end
@@ -428,85 +432,85 @@ do
 		DisableDuplicator=true,--Disable the ability for players to duplicate this SWEP--Default: false
 		ScriptedEntityType="weapon",--(Clientside) Sets the spawnmenu content icon type for the entity, used by spawnmenu in the Sandbox-derived gamemodes. See spawnmenu.AddContentType for more information.--Default: "weapon"
 		m_bPlayPickupSound=true,--If set to false, the weapon will not play the weapon pick up sound when picked up.--Default: true --
-		PrimaryAttack=function(self)
-			if self.Cuffing then return end-- in the process of cuffing already
-			local Owner=self.Owner
-			local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
-			local target=trace and trace.Entity
-			if hook.Run("CanCuff",Owner,trace,target,self)==false then return end
-			if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
-				self.Cuffing={
-					time=CurTime()+cfg.time,
-					Entity=target,
-				}
-				self.NextSound=CurTime()+cfg.time*0.1
-			end
-		end,
-		SecondaryAttack=function(self)
-			if CLIENT then return end
-			local Owner=self.Owner
-			local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
-			local target=trace and trace.Entity
-			if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
-				local weapon=target:GetActiveWeapon()
-				if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
-					local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
-					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
-					if DarkRP then
-						--DarkRP.log(log, Color(0, 255, 255))
-					end
-					ServerLog(log.."\n")
-					weapon:Remove()
+	}
+	SWEP.PrimaryAttack=function(self)
+		if self.Cuffing then return end-- in the process of cuffing already
+		local Owner=self.Owner
+		local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
+		local target=trace and trace.Entity
+		if hook.Run("CanCuff",Owner,trace,target,self)==false then return end
+		if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
+			self.Cuffing={
+				time=CurTime()+cfg.time,
+				Entity=target,
+			}
+			self.NextSound=CurTime()+cfg.time*0.1
+		end
+	end
+	SWEP.SecondaryAttack=function(self)
+		if CLIENT then return end
+		local Owner=self.Owner
+		local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
+		local target=trace and trace.Entity
+		if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
+			local weapon=target:GetActiveWeapon()
+			if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+				local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+				wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+				local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
+				if DarkRP then
+					--DarkRP.log(log, Color(0, 255, 255))
 				end
+				ServerLog(log.."\n")
+				weapon:Remove()
 			end
-		end,
-		Think=function(self)
-			if self.Cuffing and self.Cuffing.Entity:IsValid() then
-				local Owner=self.Owner
-				local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
-				local target=trace and trace.Entity
-				if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
-					if self.Cuffing.time<=CurTime() then
-						if SERVER then
-							if cfg.finished_message then
-								DarkRP.notify(Owner,2,8,cfg.finished_message)
-							end
-							local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
-							wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} handcuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
-							local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} handcuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
-							if DarkRP then
-								--DarkRP.log(log, Color(0, 255, 255))
-							end
-							ServerLog(log.."\n")
-							self.Cuffing.Entity:Give("revenants_handcuffed")
+		end
+	end
+	SWEP.Think=function(self)
+		if self.Cuffing and self.Cuffing.Entity:IsValid() then
+			local Owner=self.Owner
+			local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
+			local target=trace and trace.Entity
+			if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
+				if self.Cuffing.time<=CurTime() then
+					if SERVER then
+						if cfg.finished_message then
+							DarkRP.notify(Owner,2,8,cfg.finished_message)
 						end
-						self.Cuffing=nil
+						local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+						wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} handcuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+						local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} handcuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
+						if DarkRP then
+							--DarkRP.log(log, Color(0, 255, 255))
+						end
+						ServerLog(log.."\n")
+						self.Cuffing.Entity:Give("revenants_handcuffed")
 					end
-					if self.NextSound and self.NextSound>=CurTime() then return end
-					self.NextSound=CurTime()+cfg.time*0.8
-					local snd={1,3,4}
-					self:EmitSound("weapons/357/357_reload"..snd[math.random(1,#snd)]..".wav",50,100)
-				else
 					self.Cuffing=nil
 				end
-			elseif self.Cuffing then
+				if self.NextSound and self.NextSound>=CurTime() then return end
+				self.NextSound=CurTime()+cfg.time*0.8
+				local snd={1,3,4}
+				self:EmitSound("weapons/357/357_reload"..snd[math.random(1,#snd)]..".wav",50,100)
+			else
 				self.Cuffing=nil
 			end
-		end,
-		DrawWorldModel=function(self)
-			--self:DrawModel()
-		end,
-		PreDrawViewModel=function(self,vm,weapon,ply)
-			local hands=ply:GetHands()
-			if hook.Run("PreDrawPlayerHands",hands,vm,ply,weapon) then
-				return true
-			end
-			hands:DrawModel()
-			hook.Run("PostDrawPlayerHands",hands,vm,ply,weapon)
+		elseif self.Cuffing then
+			self.Cuffing=nil
+		end
+	end
+	SWEP.DrawWorldModel=function(self)
+		--self:DrawModel()
+	end
+	SWEP.PreDrawViewModel=function(self,vm,weapon,ply)
+		local hands=ply:GetHands()
+		if hook.Run("PreDrawPlayerHands",hands,vm,ply,weapon) then
 			return true
-		end,
-	}
+		end
+		hands:DrawModel()
+		hook.Run("PostDrawPlayerHands",hands,vm,ply,weapon)
+		return true
+	end
 	weapons.Register(SWEP,SWEP.ClassName)
 end
 do
@@ -565,57 +569,57 @@ do
 		DisableDuplicator=true,--Disable the ability for players to duplicate this SWEP--Default: false
 		ScriptedEntityType="weapon",--(Clientside) Sets the spawnmenu content icon type for the entity, used by spawnmenu in the Sandbox-derived gamemodes. See spawnmenu.AddContentType for more information.--Default: "weapon"
 		m_bPlayPickupSound=true,--If set to false, the weapon will not play the weapon pick up sound when picked up.--Default: true --
-		PrimaryAttack=function(self)
-			if CLIENT then return end
-			local Owner=self.Owner
-			local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
-			local target=trace and trace.Entity
-			if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
-				local weapon=target:GetActiveWeapon()
-				if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
-					local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
---					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
-					if DarkRP then
-						--DarkRP.log(log, Color(0, 255, 255))
-					end
-					ServerLog(log.."\n")
-					weapon:Remove()
-				end
-			end
-		end,
-		SecondaryAttack=function(self)
-			if CLIENT then return end
-			local Owner=self.Owner
-			local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
-			local target=trace and trace.Entity
-			if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
-				local weapon=target:GetActiveWeapon()
-				if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
-					local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
-					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
-					if DarkRP then
-						--DarkRP.log(log, Color(0, 255, 255))
-					end
-					ServerLog(log.."\n")
-					weapon:Remove()
-				end
-			end
-		end,
-		DrawWorldModel=function(self)
-			self:DrawModel()
-		end,
-		PreDrawViewModel=function(self,vm,weapon,ply)
-			local hands=ply:GetHands()
-			if hook.Run("PreDrawPlayerHands",hands,vm,ply,weapon) then
-				return true
-			end
-			hands:DrawModel()
-			hook.Run("PostDrawPlayerHands",hands,vm,ply,weapon)
-			return true
-		end,
 	}
+	SWEP.PrimaryAttack=function(self)
+		if CLIENT then return end
+		local Owner=self.Owner
+		local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
+		local target=trace and trace.Entity
+		if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
+			local weapon=target:GetActiveWeapon()
+			if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+				local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+--					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+				local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
+				if DarkRP then
+					--DarkRP.log(log, Color(0, 255, 255))
+				end
+				ServerLog(log.."\n")
+				weapon:Remove()
+			end
+		end
+	end
+	SWEP.SecondaryAttack=function(self)
+		if CLIENT then return end
+		local Owner=self.Owner
+		local trace=Owner and Owner:IsValid() and Owner:GetEyeTrace()
+		local target=trace and trace.Entity
+		if target and target:IsValid() and target:IsPlayer() and target:GetPos():DistToSqr(Owner:GetPos())<=cfg.distance*cfg.distance then
+			local weapon=target:GetActiveWeapon()
+			if weapon and weapon:IsValid() and weapon:GetClass()=="revenants_handcuffed"then
+				local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+				wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+				local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
+				if DarkRP then
+					--DarkRP.log(log, Color(0, 255, 255))
+				end
+				ServerLog(log.."\n")
+				weapon:Remove()
+			end
+		end
+	end
+	SWEP.DrawWorldModel=function(self)
+		self:DrawModel()
+	end
+	SWEP.PreDrawViewModel=function(self,vm,weapon,ply)
+		local hands=ply:GetHands()
+		if hook.Run("PreDrawPlayerHands",hands,vm,ply,weapon) then
+			return true
+		end
+		hands:DrawModel()
+		hook.Run("PostDrawPlayerHands",hands,vm,ply,weapon)
+		return true
+	end
 	weapons.Register(SWEP,SWEP.ClassName)
 end
 local Player=FindMetaTable("Player")

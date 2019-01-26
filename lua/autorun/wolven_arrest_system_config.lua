@@ -146,6 +146,7 @@ wolven_arrest_system={
 		dragger_force_multiplier=.1,--multiplier for the force applied to a player who is dragging someone
 		target_force_multiplier=1,--multiplier for the force applied to a player who is being dragged
 		cuff_timer=900,--maximum time that cuffs can be on, after that, the cuffs are automatically removed
+		reset_adrenaline=true,--reset adrenaline if dragging starts again?
 		adrenaline_max=120,--after breaking away from someone, what's the maximum time for the adrenaline rush?
 		adrenaline_min=30,--after breaking away from someone, what's the minimum time for the adrenaline rush?
 		handcuff_progress=15,--how many buttons does a player have to correctly press to break away from being dragged?

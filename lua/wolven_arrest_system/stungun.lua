@@ -55,95 +55,95 @@ do
 		DisableDuplicator=true,--Disable the ability for players to duplicate this SWEP--Default: false
 		ScriptedEntityType="weapon",--(Clientside) Sets the spawnmenu content icon type for the entity, used by spawnmenu in the Sandbox-derived gamemodes. See spawnmenu.AddContentType for more information.--Default: "weapon"
 		m_bPlayPickupSound=true,--If set to false, the weapon will not play the weapon pick up sound when picked up.--Default: true --
-		Initialize=function(self)
-			self:SetColor(Color(255,255,0))
-			self.CoolDown=CurTime()+cfg.recharge_time
-		end,
-		PrimaryAttack=function(self)
-			if self.CoolDown and self.CoolDown>CurTime() then
-				self:EmitSound("Weapon_Pistol.Empty")
-				return
-			end
-			self:EmitSound"Weapon_M4A1.Silenced"
-			local Owner=self.Owner
-			if Owner:IsPlayer() then
-				Owner:LagCompensation(true)
-			end
-			local trace=util.TraceLine({
-				start=Owner:GetShootPos(),
-				endpos=Owner:GetShootPos()+Owner:GetAimVector()*cfg.police_distance,
-				filter={
-					Owner,
-				}
-			})
-			if Owner:IsPlayer() then
-				Owner:LagCompensation(false)
-			end
-			if SERVER then
-				local target=trace.Entity
-				if target and target:IsValid() and target:IsPlayer() then
-					if target:GetMoveType()==MOVETYPE_NOCLIP and !target:InVehicle() then--trying to taze admins?
-						target=Owner--shame and taze on you
- 					end
-					if hook.Run("CanTase",Owner,trace,target,self)==false then return end
-					target:EmitSound("ambient/energy/spark"..math.random(1,6)..".wav")
-					local r,g,b=Color(255,0,0),Color(0,255,0),Color(255,255,0)
-					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} tazed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} tazed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
-					if DarkRP then
-						--DarkRP.log(log, Color(0, 255, 255))
-					end
-					ServerLog(log.."\n")
-					target:Freeze(true)
-					if cfg.police_damage and cfg.police_damage>0 then
-						local CTakeDamageInfo=DamageInfo()
-						CTakeDamageInfo:SetDamage(cfg.police_damage)
-						CTakeDamageInfo:SetDamageType(DMG_SHOCK)
-						CTakeDamageInfo:SetAttacker(Owner)
-						CTakeDamageInfo:SetInflictor(self)
-						target:TakeDamageInfo(CTakeDamageInfo)
-					end
-					if target:InVehicle() then 
-						target:ExitVehicle()
-					end
-					target.tazed_police=true
-					timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
-						if target and target:IsValid() then
-							target.tazed_police=nil
-							target:Freeze(false)
-						end
-					end)
-				end
-			end
-			if !IsFirstTimePredicted() then return end
-			local effectdata = EffectData()
-			effectdata:SetOrigin(trace.HitPos)
-			effectdata:SetNormal(trace.HitNormal)
-			effectdata:SetEntity(trace.Entity)
-			effectdata:SetAttachment(trace.PhysicsBone)
-			util.Effect(trace.Entity and trace.Entity:IsValid() and trace.Entity:IsPlayer() and "cball_explode" or "MuzzleFlash", effectdata)
-			local effectdata = EffectData()
-			effectdata:SetOrigin(trace.HitPos)
-			effectdata:SetStart(self.Owner:GetShootPos())
-			effectdata:SetAttachment(1)
-			effectdata:SetEntity(self)
-			util.Effect("ToolTracer", effectdata)
-			self.CoolDown=CurTime()+cfg.recharge_time
-		end,
-		DrawHUD=function(self)
-			if !cfg.taser_hud then return end
-			local left=(self.CoolDown or 0)-CurTime()
-			hook.Run("taser_time_left",left)
-			if hook.Run("HUDShouldDraw","taser_hud")==false then return end
-			if left>0 then
-				cam.Start2D()
-				draw.DrawText("time till full charge: "..math.ceil(left),"Trebuchet24",ScrW()*0.9,ScrH()*.7,Color(255,0,0),TEXT_ALIGN_CENTER)
-				cam.End2D()
-			end
-		end,
-		SecondaryAttack=function(self)
-		end,
 	}
+	SWEP.Initialize=function(self)
+		self:SetColor(Color(255,255,0))
+		self.CoolDown=CurTime()+cfg.recharge_time
+	end
+	SWEP.PrimaryAttack=function(self)
+		if self.CoolDown and self.CoolDown>CurTime() then
+			self:EmitSound("Weapon_Pistol.Empty")
+			return
+		end
+		self:EmitSound"Weapon_M4A1.Silenced"
+		local Owner=self.Owner
+		if Owner:IsPlayer() then
+			Owner:LagCompensation(true)
+		end
+		local trace=util.TraceLine({
+			start=Owner:GetShootPos(),
+			endpos=Owner:GetShootPos()+Owner:GetAimVector()*cfg.police_distance,
+			filter={
+				Owner,
+			}
+		})
+		if Owner:IsPlayer() then
+			Owner:LagCompensation(false)
+		end
+		if SERVER then
+			local target=trace.Entity
+			if target and target:IsValid() and target:IsPlayer() then
+				if target:GetMoveType()==MOVETYPE_NOCLIP and !target:InVehicle() then--trying to taze admins?
+					target=Owner--shame and taze on you
+				end
+				if hook.Run("CanTase",Owner,trace,target,self)==false then return end
+				target:EmitSound("ambient/energy/spark"..math.random(1,6)..".wav")
+				local r,g,b=Color(255,0,0),Color(0,255,0),Color(255,255,0)
+				wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} tazed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+				local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} tazed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
+				if DarkRP then
+					--DarkRP.log(log, Color(0, 255, 255))
+				end
+				ServerLog(log.."\n")
+				target:Freeze(true)
+				if cfg.police_damage and cfg.police_damage>0 then
+					local CTakeDamageInfo=DamageInfo()
+					CTakeDamageInfo:SetDamage(cfg.police_damage)
+					CTakeDamageInfo:SetDamageType(DMG_SHOCK)
+					CTakeDamageInfo:SetAttacker(Owner)
+					CTakeDamageInfo:SetInflictor(self)
+					target:TakeDamageInfo(CTakeDamageInfo)
+				end
+				if target:InVehicle() then 
+					target:ExitVehicle()
+				end
+				target.tazed_police=true
+				timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
+					if target and target:IsValid() then
+						target.tazed_police=nil
+						target:Freeze(false)
+					end
+				end)
+			end
+		end
+		if !IsFirstTimePredicted() then return end
+		local effectdata = EffectData()
+		effectdata:SetOrigin(trace.HitPos)
+		effectdata:SetNormal(trace.HitNormal)
+		effectdata:SetEntity(trace.Entity)
+		effectdata:SetAttachment(trace.PhysicsBone)
+		util.Effect(trace.Entity and trace.Entity:IsValid() and trace.Entity:IsPlayer() and "cball_explode" or "MuzzleFlash", effectdata)
+		local effectdata = EffectData()
+		effectdata:SetOrigin(trace.HitPos)
+		effectdata:SetStart(self.Owner:GetShootPos())
+		effectdata:SetAttachment(1)
+		effectdata:SetEntity(self)
+		util.Effect("ToolTracer", effectdata)
+		self.CoolDown=CurTime()+cfg.recharge_time
+	end
+	SWEP.DrawHUD=function(self)
+		if !cfg.taser_hud then return end
+		local left=(self.CoolDown or 0)-CurTime()
+		hook.Run("taser_time_left",left)
+		if hook.Run("HUDShouldDraw","taser_hud")==false then return end
+		if left>0 then
+			cam.Start2D()
+			draw.DrawText("time till full charge: "..math.ceil(left),"Trebuchet24",ScrW()*0.9,ScrH()*.7,Color(255,0,0),TEXT_ALIGN_CENTER)
+			cam.End2D()
+		end
+	end
+	SWEP.SecondaryAttack=function(self)
+	end
 	weapons.Register(SWEP,SWEP.ClassName)--the police issue has a lot in common with the next
 end
 do
@@ -202,103 +202,103 @@ do
 		DisableDuplicator=true,--Disable the ability for players to duplicate this SWEP--Default: false
 		ScriptedEntityType="weapon",--(Clientside) Sets the spawnmenu content icon type for the entity, used by spawnmenu in the Sandbox-derived gamemodes. See spawnmenu.AddContentType for more information.--Default: "weapon"
 		m_bPlayPickupSound=true,--If set to false, the weapon will not play the weapon pick up sound when picked up.--Default: true --
-		Initialize=function(self)
-			self.CoolDown=CurTime()+cfg.recharge_time
-		end,
-		PrimaryAttack=function(self)
-			if self.CoolDown and self.CoolDown>CurTime() then
-				self:EmitSound("Weapon_Pistol.Empty")
-				return
-			end
-			self:EmitSound"Weapon_M4A1.Silenced"
-			local Owner=self.Owner
-			if Owner:IsPlayer() then
-				Owner:LagCompensation(true)
-			end
-			local trace=util.TraceLine({
-				start=Owner:GetShootPos(),
-				endpos=Owner:GetShootPos()+Owner:GetAimVector()*cfg.civilian_distance,
-				filter={
-					Owner,
-				}
-			})
-			if Owner:IsPlayer() then
-				Owner:LagCompensation(false)
-			end
-			if SERVER then
-				local target=trace.Entity
-				if target and target:IsValid() and target:IsPlayer() then
-					if target:GetMoveType()==MOVETYPE_NOCLIP and !target:InVehicle() then--trying to taze admins?
-						target=Owner--shame and taze on you
- 					end
-					if hook.Run("CanTase",Owner,trace,target,self)==false then return end
-					target:EmitSound("ambient/energy/spark"..math.random(1,6)..".wav")
-					local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
-					wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} tazed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
-					local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} tazed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
-					if DarkRP then
-						--DarkRP.log(log, Color(0, 255, 255))
-					end
-					ServerLog(log.."\n")
-					target:Freeze(true)
-					if cfg.civilian_damage and cfg.civilian_damage>0 then
-						local CTakeDamageInfo=DamageInfo()
-						CTakeDamageInfo:SetDamage(cfg.civilian_damage)
-						CTakeDamageInfo:SetDamageType(DMG_SHOCK)
-						CTakeDamageInfo:SetAttacker(Owner)
-						CTakeDamageInfo:SetInflictor(self)
-						target:TakeDamageInfo(CTakeDamageInfo)
-					end
-					if target:InVehicle() then 
-						target:ExitVehicle()
-					end
-					target.tazed_civilian=true
-					timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
-						if target and target:IsValid() then
-							target.tazed_civilian=nil
-							target:Freeze(false)
-						end
-					end)
-				end
-			end
-			if !IsFirstTimePredicted() then return end
-			local effectdata = EffectData()
-			effectdata:SetOrigin(trace.HitPos)
-			effectdata:SetNormal(trace.HitNormal)
-			effectdata:SetEntity(trace.Entity)
-			effectdata:SetAttachment(trace.PhysicsBone)
-			util.Effect(trace.Entity and trace.Entity:IsValid() and trace.Entity:IsPlayer() and "cball_explode" or "MuzzleFlash", effectdata)
-			local effectdata = EffectData()
-			effectdata:SetOrigin(trace.HitPos)
-			effectdata:SetStart(self.Owner:GetShootPos())
-			effectdata:SetAttachment(1)
-			effectdata:SetEntity(self)
-			util.Effect("ToolTracer", effectdata)
-			self.CoolDown=CurTime()+cfg.recharge_time
-		end,
-		DrawHUD=function(self)
-			if !cfg.taser_hud then return end
-			local left=(self.CoolDown or 0)-CurTime()
-			hook.Run("taser_time_left",left)
-			if hook.Run("HUDShouldDraw","taser_hud")==false then return end
-			if left>0 then
-				cam.Start2D()
-				draw.DrawText("time till full charge: "..math.ceil(left),"Trebuchet24",ScrW()*0.9,ScrH()*.7,Color(255,0,0),TEXT_ALIGN_CENTER)
-				cam.End2D()
-			end
-		end,
-		Deploy=function(self)
-			self:SetMaterial"phoenix_storms/stripes"
-			return true
-		end,
-		Holster=function(self)
-			self:SetColor(Color(255,255,255,255))
-			self:SetMaterial""
-			return true
-		end,
-		SecondaryAttack=function(self)
-		end,
 	}
+	SWEP.Initialize=function(self)
+		self.CoolDown=CurTime()+cfg.recharge_time
+	end
+	SWEP.PrimaryAttack=function(self)
+		if self.CoolDown and self.CoolDown>CurTime() then
+			self:EmitSound("Weapon_Pistol.Empty")
+			return
+		end
+		self:EmitSound"Weapon_M4A1.Silenced"
+		local Owner=self.Owner
+		if Owner:IsPlayer() then
+			Owner:LagCompensation(true)
+		end
+		local trace=util.TraceLine({
+			start=Owner:GetShootPos(),
+			endpos=Owner:GetShootPos()+Owner:GetAimVector()*cfg.civilian_distance,
+			filter={
+				Owner,
+			}
+		})
+		if Owner:IsPlayer() then
+			Owner:LagCompensation(false)
+		end
+		if SERVER then
+			local target=trace.Entity
+			if target and target:IsValid() and target:IsPlayer() then
+				if target:GetMoveType()==MOVETYPE_NOCLIP and !target:InVehicle() then--trying to taze admins?
+					target=Owner--shame and taze on you
+				end
+				if hook.Run("CanTase",Owner,trace,target,self)==false then return end
+				target:EmitSound("ambient/energy/spark"..math.random(1,6)..".wav")
+				local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
+				wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} tazed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a ",g,self.PrintName,"\n"})
+				local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} tazed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..self.PrintName
+				if DarkRP then
+					--DarkRP.log(log, Color(0, 255, 255))
+				end
+				ServerLog(log.."\n")
+				target:Freeze(true)
+				if cfg.civilian_damage and cfg.civilian_damage>0 then
+					local CTakeDamageInfo=DamageInfo()
+					CTakeDamageInfo:SetDamage(cfg.civilian_damage)
+					CTakeDamageInfo:SetDamageType(DMG_SHOCK)
+					CTakeDamageInfo:SetAttacker(Owner)
+					CTakeDamageInfo:SetInflictor(self)
+					target:TakeDamageInfo(CTakeDamageInfo)
+				end
+				if target:InVehicle() then 
+					target:ExitVehicle()
+				end
+				target.tazed_civilian=true
+				timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
+					if target and target:IsValid() then
+						target.tazed_civilian=nil
+						target:Freeze(false)
+					end
+				end)
+			end
+		end
+		if !IsFirstTimePredicted() then return end
+		local effectdata = EffectData()
+		effectdata:SetOrigin(trace.HitPos)
+		effectdata:SetNormal(trace.HitNormal)
+		effectdata:SetEntity(trace.Entity)
+		effectdata:SetAttachment(trace.PhysicsBone)
+		util.Effect(trace.Entity and trace.Entity:IsValid() and trace.Entity:IsPlayer() and "cball_explode" or "MuzzleFlash", effectdata)
+		local effectdata = EffectData()
+		effectdata:SetOrigin(trace.HitPos)
+		effectdata:SetStart(self.Owner:GetShootPos())
+		effectdata:SetAttachment(1)
+		effectdata:SetEntity(self)
+		util.Effect("ToolTracer", effectdata)
+		self.CoolDown=CurTime()+cfg.recharge_time
+	end
+	SWEP.DrawHUD=function(self)
+		if !cfg.taser_hud then return end
+		local left=(self.CoolDown or 0)-CurTime()
+		hook.Run("taser_time_left",left)
+		if hook.Run("HUDShouldDraw","taser_hud")==false then return end
+		if left>0 then
+			cam.Start2D()
+			draw.DrawText("time till full charge: "..math.ceil(left),"Trebuchet24",ScrW()*0.9,ScrH()*.7,Color(255,0,0),TEXT_ALIGN_CENTER)
+			cam.End2D()
+		end
+	end
+	SWEP.Deploy=function(self)
+		self:SetMaterial"phoenix_storms/stripes"
+		return true
+	end
+	Holster=function(self)
+		self:SetColor(Color(255,255,255,255))
+		self:SetMaterial""
+		return true
+	end
+	SecondaryAttack=function(self)
+	end
 	weapons.Register(SWEP,SWEP.ClassName)
 end
 hook.Add("CanPlayerSuicide","taser_hooks",function(target)
@@ -322,10 +322,10 @@ end)
 local togive={}
 hook.Add("PlayerLoadout","taser_hooks",function(ply)
 	local TEAM=ply:Team()
-	if togive[TEAM]==nil and cfg.autogive  then
+	if togive[TEAM]==nil and cfg.autogive then
 		togive[TEAM]=table.HasValue(ply:getJobTable().weapons,"arrest_stick")
 	end
-	if togive[TEAM] and cfg.autogive  then
+	if togive[TEAM] and cfg.autogive then
 		ply:Give("revenants_stungun_police")
 	end
 end)

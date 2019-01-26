@@ -29,7 +29,7 @@ function ENT:Use(activator,ply,useType,value)
 	if ply:isCP() then
 		local supress_hint,count,target=false,0,ply:GetNWEntity("handcuff_drag")
 		if target and target:IsValid() then
-			supress_hint,jailed=self:Arrest(target,ply)
+			supress_hint,count=self:Arrest(target,ply)
 		end
 		for k,target in ipairs(player.GetAll()) do
 			if target:GetPos():DistToSqr(self:GetPos()) < cfg.distance*cfg.distance then

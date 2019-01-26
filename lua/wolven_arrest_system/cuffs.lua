@@ -181,8 +181,12 @@ hook.Add("onLockpickCompleted","handcuff_hooks",function(Owner,success,target)
 		target:GetActiveWeapon():Remove()
 		local r,g,b=Color(255,0,0),Color(0,255,0),Color(0,255,255)
 		local OW=Owner:GetActiveWeapon()
-		wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a "..(OW.PrintName or OW:GetClass()),"\n"})
-		local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..(OW.PrintName or OW:GetClass())
+		local name=OW.PrintName
+		if !name or name=="" or name=="Scripted Weapon" then
+			name=OW:GetClass()
+		end
+		wolven_arrest_system.console_log({r,Owner:Name(),b," (",r,Owner:SteamID(),b,") <",r,team.GetName(Owner:Team()),b,"> {",r,Owner:getDarkRPVar("job"),b,"} uncuffed ",g,target:Name(),b," <",g,team.GetName(target:Team()),b,"> {",g,target:getDarkRPVar("job"),b,"} with a "..name,"\n"})
+		local log=Owner:Name().." ("..Owner:SteamID()..") <"..team.GetName(Owner:Team()).."> {"..Owner:getDarkRPVar("job").."} uncuffed "..target:Name().." <"..team.GetName(target:Team()).."> {"..target:getDarkRPVar("job").."} with a "..name
 		if DarkRP then
 			--DarkRP.log(log, Color(0, 255, 255))
 		end

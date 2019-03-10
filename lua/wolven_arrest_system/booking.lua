@@ -55,7 +55,6 @@ end
 function ENT:Arrest(target,ply)
 	if target:isArrested() then
 		target:arrest()
-		hook.Run("playerArrested",target,time,ply)
 		return 0,true
 	end
 	local weapon=target:GetActiveWeapon()
@@ -81,7 +80,6 @@ function ENT:Arrest(target,ply)
 					DarkRP.notify(target,2,8,"check your console")
 					target:SendLua("wolven_arrest_system.booking_arrest_msg()")
 				end
-				hook.Run("playerArrested",target,time,ply)
 				local log=ply:Name().." ("..ply:SteamID()..") arrested "..target:Name()
 				if DarkRP then
 					DarkRP.log(log, Color(0, 255, 255))
@@ -99,7 +97,9 @@ hook.Add("canArrest","booking_hooks",function(cop,ply,by_unit)
 	if not cfg.booking_only or by_unit then
 		return--allow arrest
 	end
-	return false,"you can only arrest by the booking unit"
+	if #ents.FindByClass(ENT.ClassName)!=0 then
+		return false,"you can only arrest by the booking unit"
+	end
 end)
 gameevent.Listen( "player_disconnect" )
 hook.Add( "player_disconnect", "handcuff_hooks", function( data )

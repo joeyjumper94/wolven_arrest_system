@@ -87,6 +87,7 @@ local func=function()
 				n:SetPos(v:GetPos())
 				n:SetModel(v:GetModel())
 				n:SetAngles(v:GetAngles())
+				n:SetParent(v:GetParent())
 				n:Spawn()
 				n:SetNWBool("wolven_arrest_system_replacement",true)
 				v:Remove()
@@ -103,7 +104,7 @@ local blacklist={
 	spawned_money="money is supposed to go into your wallet"
 }
 hook.Add("canPocket","wolven_arrest_system_general_hooks",function(ply,ent)
-	local reason=blacklist[ent:GetClass()]
+	local reason=blacklist[ent:IsValid() and ent:GetClass()]
 	if reason then
 		return false,type(reason)=="string" and reason
 	end
@@ -113,7 +114,6 @@ hook.Add("PlayerInitialSpawn","wolven_arrest_system_general_hooks",function(ply)
 		if ply and ply:IsValid() and wolven_arrest_system.LTAP[ply:SteamID()] then
 			local time=GAMEMODE.Config and GAMEMODE.Config.jailtimer or 120
 			ply:arrest(time,ply)
-			hook.Run("playerArrested",ply,time,ply)
 			wolven_arrest_system.LTAP[ply:SteamID()]=nil--now they have received their punishment, 
 		end
 	end)

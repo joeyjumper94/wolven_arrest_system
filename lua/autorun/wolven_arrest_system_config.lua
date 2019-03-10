@@ -199,15 +199,49 @@ if you make it out the door, your arrested status will be removed, though you wi
 			},
 			rp_downtown_v4c_v6={
 				{--window
-					Vector(-1442.550049,23.490604,141.599915),
-					Vector(-1486.639771,151.750778,67.993301),
+					Vector(-1415,163,18),
+					Vector(-1453,57,116)
 				},
 				{--door
-					Vector(-1473.834473,130.070694,-38.486290),
-					Vector(-1428.337036,64.954643,-178.605026),
-				}
+					Vector(-1474,130,-38),
+					Vector(-1428,65,-179),
+				},
 			},
-		}
+			rp_genova_ob_04={
+				{--vents to alley
+					Vector(947,-1171,60),
+					Vector(824,-1312,0),
+				},
+				{--vents to building
+					Vector(111,-742,62),
+					Vector(5,-804,0),
+				},
+				{--minshaft behind locker
+					Vector(804,-1699,-42),
+					Vector(754,-1770,-137),
+				},
+				{--jail front door
+					Vector(1490,-1784,0),
+					Vector(1527,-1669,128),
+				},
+				{--PD front door
+					Vector(1409,-1114,96),
+					Vector(1373,-1245,0),
+				},
+				{--PD garage door
+					Vector(1900,-947,102),
+					Vector(1603,-1025,-2),
+				},
+				{--PD subway
+					Vector(-1610,-1464,108),
+					Vector(-1640,-1591,0),
+				},
+				{
+					Vector(1405,-284,-60),
+					Vector(1321,-309,-252),
+				}
+			}
+		},
 	},
 	--misc stuff
 	log_access={--a list of ranks that can see the cuff/taser logs appear in their console
@@ -235,7 +269,7 @@ if you make it out the door, your arrested status will be removed, though you wi
 --		["models/props_combine/combine_intmonitor001.mdl"]="revenants_bail_unit",
 --		["models/props_combine/combine_intmonitor003.mdl"]="revenants_bail_unit",
 		["models/props_phx/rt_screen.mdl"]="revenants_bail_unit",
---		["models/props_phx/sp_screen.mdl"]="revenants_bail_unit",
+		["models/props_phx/sp_screen.mdl"]="revenants_bail_unit",
 	},
 }
 --don't touch the stuff below

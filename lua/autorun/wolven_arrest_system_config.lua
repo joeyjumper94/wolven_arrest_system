@@ -276,11 +276,6 @@ if you make it out the door, your arrested status will be removed, though you wi
 wolven_arrest_system.LTAP=tbl
 local FILES,FOLDERS=file.Find("wolven_arrest_system/*.lua","LUA")
 for k,FILE in ipairs(FILES)do
-	if SERVER then
-		SetGlobalBool("wolven_arrest_system/"..FILE,true)--set a global bool so clients know whether or not to include this file
-		AddCSLuaFile("wolven_arrest_system/"..FILE)--send it to the client
-	end
-	if GetGlobalBool("wolven_arrest_system/"..FILE) then--use the global bool so we know if we should include this file, otherwise people could exploit this to run arbitrary lua
-		include("wolven_arrest_system/"..FILE)--run it
-	end
+	AddCSLuaFile("wolven_arrest_system/"..FILE)--send it to the client
+	include("wolven_arrest_system/"..FILE)--run it
 end

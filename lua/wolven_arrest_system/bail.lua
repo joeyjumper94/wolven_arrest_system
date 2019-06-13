@@ -151,14 +151,18 @@ cvars.AddChangeCallback("arrest_zones_debug",function(v,o,n)arrest_zones_debug=n
 hook.Add("HUDPaint","arrest_zones_debug",function()
 	if arrest_zones_debug and not bl[LocalPlayer():GetUserGroup()] then
 		local zones=cfg.unarrest_zones[game.GetMap()]
-		if zones then
+		if zones and #zones!=0 then
 			cam.Start3D()
 			for k,v in ipairs(zones)do
 				render.DrawWireframeBox(vector_origin,angle_zero,v[1],v[2])
 			end
 			cam.End3D()
+		elseif zones then
+			print"no zones"
+			GetConVar"arrest_zones_debug":SetBool(false)
 		else
-			hook.Remove("PostDrawTranslucentRenderables","arrest_zones_debug")
+			print"no map data at all"
+			GetConVar"arrest_zones_debug":SetBool(false)
 		end
 	end
 end)

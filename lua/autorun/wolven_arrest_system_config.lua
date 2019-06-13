@@ -239,8 +239,22 @@ if you make it out the door, your arrested status will be removed, though you wi
 				{
 					Vector(1405,-284,-60),
 					Vector(1321,-309,-252),
-				}
-			}
+				},
+			},
+			rp_downtown_tits_v2={
+				{--sewer vent
+					Vector(-1454,1250,-534),
+					Vector(-1504,1102,-688),
+				},
+				{--side door
+					Vector(-1827,-136,-70),
+					Vector(-1964,-202,-197),
+				},
+				{--front door)
+					Vector(-1476,152,-48),
+					Vector(-1433,48,-196),
+				},
+			},
 		},
 	},
 	--misc stuff

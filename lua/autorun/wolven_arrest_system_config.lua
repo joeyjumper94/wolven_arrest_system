@@ -2,6 +2,7 @@ local tbl=wolven_arrest_system and wolven_arrest_system.LTAP or {}--don't touch 
 
 wolven_arrest_system={
 	looting={
+		enable=true,--enable this module
 		model="models/props_wasteland/prison_toilet01.mdl",--what model should be default for this entity?
 		time=120,--after tying to get loot, how long before the same player can loot again?
 		need_arrested=true,--does a player have to be arrested to loot the prison?
@@ -117,6 +118,7 @@ wolven_arrest_system={
 		},
 	},
 	stungun={
+		enable=true,--enable this module
 		autogive=true,--automatically give the police issue taser to those who (would normally )have arrest batons?
 		stun_duration=10,--how long is a player stunned?
 		recharge_time=30,--how long does it take the stungun to rechage?
@@ -131,6 +133,7 @@ wolven_arrest_system={
 		untaze_on_death_civilian=true,--remove the taze effect from civilian taser on death
 	},
 	cuffs={
+		enable=true,--enable this module
 		NoDrive=true,--prevent players from entering vehicles,
 		finished_message="press E on a cuffed player to drag them,\npress E on them again to stop dragging",--message to send to someone when they finish cuffing
 		autogive=true,--automatically give the handcuffs and keys to those who (would normally )have arrest batons?
@@ -157,6 +160,7 @@ wolven_arrest_system={
 		remember_arrested=true,--arrest people if they dc and rejoin while cuffed?
 	},
 	booking={
+		enable=true,--enable this module
 		target_notify=[[you have your pocket and anything in it, maybe you can use something in there to break out
 the bail unit will allow you to buy your way out of jail, it costs one to ten percent of you total wallet
 the looting system may give you somthing that you can break yourself out with
@@ -175,6 +179,7 @@ if you make it out the door, your arrested status will be removed, though you wi
 		remember_arrested=true,--remember who is arrested incase they try rejoining to get out of jail?
 	},
 	bail={
+		enable=true,--enable this module
 		model="models/props_phx/rt_screen.mdl",--what model should be default for this entity?
 		time=600,--how long until your bail price hits the minimum
 		wanted_reason="Escaping prison.",--wanted reason when someone tries to walk out of the jail area

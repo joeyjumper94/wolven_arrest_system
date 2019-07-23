@@ -1,4 +1,5 @@
 local cfg=wolven_arrest_system.bail
+if !cfg.enable then return end
 local ENT={
 	base="base_entity",
 	Type = "anim",

@@ -1,4 +1,5 @@
 local cfg=wolven_arrest_system.stungun
+if !cfg.enable then return end
 do
 	local SWEP={
 		ClassName="revenants_stungun_police",--Entity class name of the SWEP(file or folder name of your SWEP). This is set automatically

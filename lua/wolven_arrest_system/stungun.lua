@@ -96,6 +96,7 @@ do
 				end
 				ServerLog(log.."\n")
 				target:Freeze(true)
+				target.tazed_police=true
 				if cfg.police_damage and cfg.police_damage>0 then
 					local CTakeDamageInfo=DamageInfo()
 					CTakeDamageInfo:SetDamage(cfg.police_damage)
@@ -107,7 +108,6 @@ do
 				if target:InVehicle() then 
 					target:ExitVehicle()
 				end
-				target.tazed_police=true
 				timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
 					if target and target:IsValid() then
 						target.tazed_police=nil
@@ -242,6 +242,7 @@ do
 				end
 				ServerLog(log.."\n")
 				target:Freeze(true)
+				target.tazed_civilian=true
 				if cfg.civilian_damage and cfg.civilian_damage>0 then
 					local CTakeDamageInfo=DamageInfo()
 					CTakeDamageInfo:SetDamage(cfg.civilian_damage)
@@ -253,7 +254,6 @@ do
 				if target:InVehicle() then 
 					target:ExitVehicle()
 				end
-				target.tazed_civilian=true
 				timer.Create("stungun_stun"..target:SteamID64(),cfg.stun_duration,1,function()
 					if target and target:IsValid() then
 						target.tazed_civilian=nil
